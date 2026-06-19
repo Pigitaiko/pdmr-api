@@ -45,6 +45,21 @@ present on the cover page and repeated in the footer `Fine Comunicato n.<id>`.
 **Reasoning:** Stable, unique per filing, machine-extractable, matches the `NNNN-NN-YYYY` format the
 brief itself referenced. Redis SET also tracks seen *source URLs* as a cheap pre-filter.
 
+### D-007 — 1Info is a JS SPA → stub, not scrape
+**Context:** `https://www.1info.it` 302-redirects to `/PORTALE1INFO`, a **Vue single-page app**
+(only ~265 chars of server-rendered text; content is client-rendered). The brief forbids
+Selenium/headless browsers and says: if a source genuinely requires JS, document it and stub the
+scraper with a TODO.
+**Decision:** `scraper/oneinfo.py` is a documented stub raising `NotImplementedError` with a TODO
+describing the options (reverse-engineer the SPA's XHR/JSON API, or use the operator's official
+data feed). eMarketStorage alone already provides the full internal-dealing flow.
+**Reasoning:** Honours the no-headless constraint; avoids a brittle JS-execution dependency.
+
+### D-008 — robots.txt compliance verified
+eMarketStorage `robots.txt` disallows `/core /admin /user /search …` but **not** `/node/` or
+`/sites/` — so listing pages (`/en/node/21`) and PDF paths (`/sites/default/files/comunicati/…`)
+are permitted. Scraper still sends the descriptive UA, throttles ≥1 req/s, and backs off on 429.
+
 ### D-006 — One transaction row per price/volume pair
 **Context:** A single `Operazione` block can list several `<price> EUR <volume>` fills for the same
 instrument/day/venue.
