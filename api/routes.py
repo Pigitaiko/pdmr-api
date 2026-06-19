@@ -88,7 +88,7 @@ async def list_transactions(
     )
 
     return TransactionListOut(
-        data=[TransactionOut.model_validate(r) for r in rows],
+        data=[TransactionOut.from_tx(r) for r in rows],
         meta=Meta(total=total, limit=limit, offset=offset),
     )
 
@@ -96,11 +96,13 @@ async def list_transactions(
 @router.get("/transactions/{tx_id}", response_model=TransactionOut, dependencies=[RateLimitDep])
 async def get_transaction(tx_id: int, session: AsyncSession = SessionDep) -> TransactionOut:
     row = (
-        await session.execute(select(Transaction).where(Transaction.id == tx_id))
+        await session.execute(
+            select(Transaction).where(Transaction.id == tx_id).options(*_TX_LOADERS)
+        )
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="transaction not found")
-    return TransactionOut.model_validate(row)
+    return TransactionOut.from_tx(row)
 
 
 @router.get("/issuers", response_model=IssuerListOut, dependencies=[RateLimitDep])
@@ -218,6 +220,6 @@ async def signals(
         .all()
     )
     return TransactionListOut(
-        data=[TransactionOut.model_validate(r) for r in rows],
+        data=[TransactionOut.from_tx(r) for r in rows],
         meta=Meta(total=total, limit=limit, offset=offset),
     )

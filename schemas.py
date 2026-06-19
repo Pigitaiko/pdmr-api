@@ -7,8 +7,19 @@ from __future__ import annotations
 
 from datetime import date, datetime, time
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, field_serializer
+
+if TYPE_CHECKING:
+    from models import Transaction
+
+
+class _Issuer(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    lei: str | None
 
 
 class TransactionOut(BaseModel):
@@ -31,10 +42,25 @@ class TransactionOut(BaseModel):
     venue: str | None
     venue_mic: str | None
     linked_to_option_programme: bool | None
+    # denormalised filing context (populated when the filing/issuer are eager-loaded)
+    issuer_name: str | None = None
+    role_code: str | None = None
+    filing_ref: str | None = None
 
     @field_serializer("price", "volume", "signal_value")
     def _ser_decimal(self, v: Decimal | None) -> str | None:
         return None if v is None else format(v, "f")
+
+    @classmethod
+    def from_tx(cls, tx: Transaction) -> TransactionOut:
+        out = cls.model_validate(tx)
+        filing = tx.filing
+        if filing is not None:
+            out.role_code = filing.role_code
+            out.filing_ref = filing.filing_id
+            if filing.issuer is not None:
+                out.issuer_name = filing.issuer.name
+        return out
 
 
 class IssuerOut(BaseModel):

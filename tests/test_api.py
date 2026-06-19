@@ -43,6 +43,10 @@ async def test_list_transactions_meta_and_shape(client):
     # money must be a string, not a float
     assert isinstance(tx["price"], str)
     assert isinstance(tx["signal_value"], str)
+    # denormalised filing context present (dashboard contract)
+    assert tx["issuer_name"]
+    assert tx["role_code"]
+    assert tx["filing_ref"]
 
 
 async def test_filter_by_type_buys(client):

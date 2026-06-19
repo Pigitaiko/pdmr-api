@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import Any
 
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api.routes import router
 from config import get_settings
@@ -57,3 +59,9 @@ app.include_router(router)
 @app.get("/health")
 async def health() -> dict[str, Any]:
     return {"status": "ok", "service": "pdmr-api", "version": "0.1.0"}
+
+
+# minimal static dashboard at /dashboard (no build step)
+_static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+if os.path.isdir(_static_dir):
+    app.mount("/dashboard", StaticFiles(directory=_static_dir, html=True), name="dashboard")

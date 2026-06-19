@@ -142,14 +142,21 @@ docker-compose.yml · Makefile · pyproject.toml · .env.example · .pre-commit-
 ```
 
 ## Current status
-- [x] Phase 0 — scaffolding (uv, dirs, pyproject, env, gitignore). Docker compose authored but
-      **cannot run here** (no Docker in env — see DECISIONS D-002).
-- [ ] Phase 1 — DB layer (models, alembic, seed)
-- [ ] Phase 2 — PDF parser (core)
-- [ ] Phase 3 — scrapers
-- [ ] Phase 4 — REST API
-- [ ] Phase 5 — scheduler & ops
-- [ ] Phase 6 — stretch
+- [x] Phase 0 — scaffolding (uv, dirs, pyproject, env, gitignore, docker-compose, Makefile,
+      pre-commit). Lint clean. Compose authored; not run here (no Docker — DECISIONS D-002).
+- [x] Phase 1 — DB layer: models, async engine, idempotent store, seed, Alembic initial
+      migration (applies cleanly on SQLite; same migration targets Postgres).
+- [x] Phase 2 — PDF parser (core): 32 tests; exact CEMBRE ground truth + 6 cross-issuer fixtures.
+- [x] Phase 3 — scrapers: eMarketStorage implemented, 1Info stubbed (SPA). LIVE-verified on
+      SQLite: 91 filings, 96.7% success, 2353 tx; re-run ingests 0 (idempotent).
+- [x] Phase 4 — REST API: all endpoints + filters + meta; 13 API tests; decimals as strings.
+- [x] Phase 5 — scheduler (APScheduler, market-hours cadence), Dockerfile, combined compose
+      (`--profile full`), README, GitHub Actions CI, uv.lock.
+- [x] Phase 6 — `/v1/signals` + static dashboard (`/dashboard`) + `make backfill`.
+
+Whole suite: **49 tests green**, ruff + mypy clean. Executable verification runs on SQLite
+(aiosqlite); Postgres-specific execution (docker compose up, migrate on PG, ingest→PG) is
+code-complete and awaits a Docker host. See PROGRESS.md.
 
 ## Key decisions
 See `DECISIONS.md` for the full log. Headlines: package manager = **uv**; CLAUDE.md authored from
