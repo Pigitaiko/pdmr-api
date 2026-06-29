@@ -34,11 +34,22 @@
 
 **Whole suite: 49 tests green. ruff + mypy clean.** Tag: `v0.1.0`.
 
-### Half-done / caveats
-- **Postgres execution not run here** (no Docker). To confirm the Postgres path on a Docker host:
-  `docker compose up -d && make migrate && make scrape` then hit `/docs`. Expected to work as-is
-  (code is DB-agnostic; migration verified on SQLite; aiosqlite-vs-asyncpg differences are nil
-  for the SQL used). This is the one DoD not executed in this environment.
+### 2026-06-29 — Postgres path VERIFIED on Docker + pushed to GitHub
+- Repo live: **https://github.com/Pigitaiko/pdmr-api** (public) — 6 commits, tag `v0.1.0`,
+  GitHub Actions CI green (ruff + mypy + 49 tests).
+- Docker Desktop installed. Full stack run end-to-end against **real PostgreSQL 15**:
+  - `docker compose up -d` → postgres + redis both **healthy** (Phase 0 DoD on Docker).
+  - `make migrate` → Alembic applied on Postgres; `signal_value` confirmed
+    `GENERATED ALWAYS AS (price * volume)` via information_schema.
+  - `make scrape` → **69 filings, 0 failed, 2 partial, 793 transactions, 25 issuers** (97.1%
+    success); re-run ingested **0** (68 duplicates) — idempotent on Postgres + Redis.
+  - API served against Postgres: `/health`, `/docs` (all 7 endpoints), `?type=A&min_value=50000`
+    (16 rows, money as strings), `/v1/signals` (ranked; top IMMSI €191,520), 404/422/`/dashboard`
+    all correct.
+- **All phase DoDs now executed on the real Postgres/Redis stack. Nothing left pending.**
+
+### Earlier caveat (now resolved)
+- Postgres execution was previously not run (no Docker in the build env). Resolved 2026-06-29.
 - 2 of 91 live filings parsed `failed`, 1 `partial` (96.7% success). They are stored with
   `raw_text` (nothing dropped). PIAGGIO `0835-29-2026` is one failed case — a layout variant
   worth inspecting to push success higher.
