@@ -5,11 +5,7 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-import pytest
-
 from scraper.emarketstorage import parse_listing
-from scraper.http import PoliteClient
-from scraper.oneinfo import fetch_internal_dealing as oneinfo_fetch
 
 LISTING = Path(__file__).parent / "fixtures" / "emarketstorage_listing.html"
 
@@ -43,11 +39,3 @@ def test_parse_listing_excludes_non_internal_dealing():
         assert it.title is None or (
             "internal" in it.title.lower() or "allegato" in it.title.lower()
         )
-
-
-@pytest.mark.asyncio
-async def test_oneinfo_is_stubbed():
-    client = PoliteClient(respect_robots=False)
-    with pytest.raises(NotImplementedError):
-        await oneinfo_fetch(client)
-    await client.aclose()

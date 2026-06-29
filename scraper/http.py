@@ -79,6 +79,34 @@ class PoliteClient:
             response=resp,  # type: ignore[possibly-undefined]
         )
 
+    async def post(
+        self,
+        url: str,
+        *,
+        data: dict | None = None,
+        headers: dict | None = None,
+        max_retries: int = 3,
+    ) -> httpx.Response:
+        if self._respect_robots and not await self.allowed(url):
+            raise PermissionError(f"robots.txt disallows {url}")
+        backoff = 2.0
+        for attempt in range(max_retries + 1):
+            await self._throttle()
+            resp = await self._client.post(url, data=data, headers=headers)
+            if resp.status_code == 429:
+                wait = float(resp.headers.get("Retry-After", backoff))
+                log.warning("rate_limited", url=url, wait=wait, attempt=attempt)
+                await asyncio.sleep(wait)
+                backoff *= 2
+                continue
+            resp.raise_for_status()
+            return resp
+        raise httpx.HTTPStatusError(
+            "exceeded retries (429)",
+            request=resp.request,
+            response=resp,  # type: ignore[possibly-undefined]
+        )
+
     async def aclose(self) -> None:
         await self._client.aclose()
 

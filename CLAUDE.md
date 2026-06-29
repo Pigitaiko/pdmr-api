@@ -20,8 +20,11 @@ MiFID-II investment service. We surface public regulatory data; we do not give i
 Sources:
 - **eMarketStorage** (Teleborsa) — `https://www.emarketstorage.it` — server-rendered, paginated
   with `?page=N`. Press releases: `/en/node/21`. Regulated documents: `/en/node/30`.
-- **1Info** (Computershare) — `https://www.1info.it` — structure unverified; inspect before
-  committing to an approach (see `DECISIONS.md`).
+- **1Info** (Computershare) — `https://www.1info.it` — implemented via its JSON API (no headless
+  browser): `POST /PORTALE1INFO/API/Comunicati` for the listing, `/PdfViewer/PdfShow.aspx` for
+  PDFs. 1Info uses several per-issuer renderings of the Allegato 3F, so the parser is section-based
+  and partial-tolerant (~47% clean `success` on a live batch; rest `partial` with raw_text kept).
+  See `DECISIONS.md` D-009/D-010.
 
 ## Verified Allegato 3F structure (from real PDFs)
 

@@ -1,5 +1,21 @@
 # PROGRESS.md
 
+## 2026-06-29 — 1Info source added (both primary sources now live)
+- **1Info fully implemented** via its JSON API — no headless browser (DECISIONS D-009):
+  - Reverse-engineered the SPA: `POST /PORTALE1INFO/API/Comunicati` (DataTables) for the listing
+    (88k+ stored comunicati), `/PdfViewer/PdfShow.aspx?...year={Y}&file={pdf}.pdf` for downloads.
+  - `scraper/oneinfo.py` real client; `ingest.py` supports `--source oneinfo|all`; scheduler polls
+    both; parser gained a section-based 1Info branch handling multiple per-issuer templates.
+- **Verified live against Postgres:** combined `--source all` ingest; both sources idempotent
+  (re-run → 0 new). DB: eMarketStorage 69 success/2 partial (~97%); 1Info 45 success/38 partial/12
+  failed (~47% clean) — partials/failed always retain `raw_text` (zero data loss, no crashes).
+- **55 tests green** (added `tests/test_oneinfo.py`: 4 real 1Info fixtures + offline API parsing);
+  ruff + mypy clean.
+- **Known limitation (DECISIONS D-010):** 1Info parse coverage is ~47% because issuers file in many
+  bespoke Allegato 3F renderings; raising it is an ongoing tuning task (per-issuer template registry
+  or column-position extraction). eMarketStorage remains the high-fidelity primary feed.
+
+
 ## 2026-06-19 — autonomous build session (Phases 0–6 complete)
 
 ### Environment reality (affects what's verifiable)

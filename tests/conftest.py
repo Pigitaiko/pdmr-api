@@ -28,8 +28,13 @@ async def client(tmp_path) -> AsyncIterator[AsyncClient]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # seed all real fixtures
+    # seed the eMarketStorage fixtures (their filing_id comes from the PDF cover page).
+    # 1Info fixtures are excluded here — they have no cover page, so their id arrives via the
+    # scraper's listing metadata, which this DB-seeding path does not carry. The API tests assert
+    # counts derived from the 7 eMarketStorage filings.
     for f in sorted(glob.glob("tests/fixtures/*.pdf")):
+        if "oneinfo_" in f:
+            continue
         parsed = parse_filing(f, source_url=f"https://example/{f}")
         async with sessionmaker() as s:
             await upsert_filing(s, parsed)

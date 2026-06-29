@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import tempfile
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 
 import structlog
@@ -21,6 +22,7 @@ from config import get_settings
 from database import create_all, dispose_engine, session_scope
 from scraper.emarketstorage import ListingItem, fetch_internal_dealing
 from scraper.http import PoliteClient
+from scraper.oneinfo import fetch_internal_dealing as oneinfo_fetch
 from scraper.parser import parse_filing
 from scraper.store import upsert_filing
 
@@ -68,9 +70,9 @@ async def _ingest_one(client: PoliteClient, item: ListingItem) -> str:
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as fh:
         fh.write(resp.content)
         fh.flush()
-        parsed = parse_filing(fh.name, source_url=item.url, source=item.source)
+        parsed = parse_filing(fh.name, source_url=item.url, source=item.source, meta=item.meta)
     if not parsed.filing_id:
-        parsed.filing_id = _fallback_filing_id(item)
+        parsed.filing_id = item.filing_id or _fallback_filing_id(item)
 
     async with session_scope() as session:
         _, created = await upsert_filing(session, parsed)
@@ -87,16 +89,32 @@ async def _ingest_one(client: PoliteClient, item: ListingItem) -> str:
     return parsed.parse_status if created else "duplicate"
 
 
+_Fetcher = Callable[..., Awaitable[list[ListingItem]]]
+_SOURCES: dict[str, tuple[str, _Fetcher]] = {
+    "emarketstorage": ("https://www.emarketstorage.it", fetch_internal_dealing),
+    "oneinfo": ("https://www.1info.it", oneinfo_fetch),
+}
+
+
 async def run(
     max_pages: int = 5, source: str = "emarketstorage", ensure_schema: bool = False
 ) -> dict[str, int]:
     if ensure_schema:
         await create_all()
+    if source == "all":
+        merged = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
+        for src in ("emarketstorage", "oneinfo"):
+            for k, v in (await run(max_pages, src)).items():
+                merged[k] += v
+        return merged
+    if source not in _SOURCES:
+        raise ValueError(f"unknown source: {source}")
+    base_url, fetcher = _SOURCES[source]
 
     stats = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
     seen = SeenStore()
-    async with PoliteClient(base_url="https://www.emarketstorage.it") as client:
-        items = await fetch_internal_dealing(client, max_pages=max_pages)
+    async with PoliteClient(base_url=base_url) as client:
+        items = await fetcher(client, max_pages=max_pages)
         stats["discovered"] = len(items)
         for item in items:
             if not await seen.is_new(item.url):

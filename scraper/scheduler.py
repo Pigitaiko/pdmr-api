@@ -25,7 +25,7 @@ TZ = "Europe/Rome"
 
 async def _tick() -> None:
     try:
-        stats = await run(max_pages=5)
+        stats = await run(max_pages=5, source="all")
         log.info("scheduler_tick_done", **stats)
     except Exception as exc:  # noqa: BLE001 - keep the scheduler alive across failures
         log.error("scheduler_tick_failed", error=str(exc))

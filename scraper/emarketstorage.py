@@ -31,6 +31,8 @@ class ListingItem:
     issuer: str | None
     title: str | None
     published_date: date | None
+    filing_id: str | None = None  # known up-front for sources that expose an id (e.g. 1Info)
+    meta: dict | None = None  # listing hints passed to the parser (filing_id, issuer, published_at)
 
 
 def _row_text(anchor) -> str:

@@ -45,7 +45,37 @@ present on the cover page and repeated in the footer `Fine Comunicato n.<id>`.
 **Reasoning:** Stable, unique per filing, machine-extractable, matches the `NNNN-NN-YYYY` format the
 brief itself referenced. Redis SET also tracks seen *source URLs* as a cheap pre-filter.
 
-### D-007 — 1Info is a JS SPA → stub, not scrape
+### D-009 — 1Info implemented via its JSON API (supersedes D-007's stub)
+**Context:** User asked to add 1Info. Re-investigated the portal (a RequireJS/Knockout SPA).
+**Decision:** Implemented 1Info **without a headless browser** by calling its backing JSON API
+directly (reverse-engineered from the SPA bundles):
+- Listing: `POST /PORTALE1INFO/API/Comunicati` — a DataTables server-side endpoint (requires the
+  full `columns[]` form payload or it NREs). Returns every stored comunicato as JSON with issuer
+  (`mittente`), title (`oggetto`), category, `pdf` id, and unix timestamps. We filter to
+  internal-dealing by title.
+- PDF: `GET /PdfViewer/PdfShow.aspx?username=oneinfo&password=oneinfo&type=comunicati&year={Y}&file={pdf}.pdf`
+  where `{Y}` is the year embedded in the `pdf` id (`{ndg}_{seq}_{year}_oneinfo`). (Credentials are
+  hardcoded in the site's own JS — public, not secrets we introduced.)
+- 1Info PDFs carry no eMarketStorage "Comunicato n." id, so the listing supplies `filing_id`
+  (the `pdf` id), issuer and publication date to the parser via `ListingItem.meta`.
+**Reasoning:** Honours the no-Selenium constraint; the JSON API is far more robust than DOM scraping.
+
+### D-010 — 1Info has many per-issuer Allegato 3F templates → partial-tolerant parsing
+**Context:** Unlike eMarketStorage (one consistent rendering, ~97% clean parse), 1Info filings come
+in **multiple per-issuer renderings** of the same legal form: bilingual "ALLEGATO/ANNEX", Italian-
+only (e.g. DEXELANCE/EPH), and free-grant variants (e.g. De Nora, price 0, `Operazione N` without a
+dash, `EUR 0 1420` price format). The parser was made section-based (split on header *phrases*, not
+numbers) and tolerant of comma decimals, dot-grouped thousands, Italian dates, and `sede di
+negoziazione` venues.
+**Decision:** Ship with ~47% clean `success` on the live 1Info batch; the remainder degrade to
+`parse_status='partial'` (every field that parses is kept; `raw_text` always retained) — never a
+crash, never a dropped filing. Raising 1Info coverage is an ongoing, iterative tuning task (the
+brief explicitly anticipated this: "let parse_status capture imperfect parses instead of crashing").
+**Reasoning:** Matches the documented design intent; avoids over-fitting regexes reactively to an
+open-ended set of bespoke issuer templates. A future improvement is a per-issuer template registry
+or a layout-aware (column-position) extraction pass.
+
+### D-007 — 1Info is a JS SPA → stub, not scrape (SUPERSEDED by D-009)
 **Context:** `https://www.1info.it` 302-redirects to `/PORTALE1INFO`, a **Vue single-page app**
 (only ~265 chars of server-rendered text; content is client-rendered). The brief forbids
 Selenium/headless browsers and says: if a source genuinely requires JS, document it and stub the
