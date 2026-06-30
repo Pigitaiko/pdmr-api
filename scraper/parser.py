@@ -39,8 +39,14 @@ ITALIAN_MONTHS = {
 
 # ---- code mappings (see CLAUDE.md "Code mappings") -------------------------------------------
 
-_ACQUISITION = ("ACQUIS", "SOTTOSCRIZIONE", "SUBSCRIPTION", "SUBSCRIBE", "PURCHASE")
-_DISPOSAL = ("CESSIONE", "VENDITA", "SALE", "DISPOSAL")
+_ACQUISITION = (
+    "ACQUIS", "SOTTOSCRIZIONE", "SUBSCRIPTION", "SUBSCRIBE", "PURCHASE",
+    "VERWERV", "INSCHRIJV", "ERWERB", "KAUF",  # nl: verwerving/inschrijving · de: erwerb/kauf
+)
+_DISPOSAL = (
+    "CESSIONE", "VENDITA", "SALE", "DISPOSAL",
+    "VERVREEMD", "VERKOOP", "VERKAUF", "VERÄUSSER", "CESSION",  # nl: vervreemding/verkoop · de
+)
 
 
 def map_transaction_type(nature_raw: str | None) -> str:

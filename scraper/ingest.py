@@ -20,6 +20,7 @@ import structlog
 
 from config import get_settings
 from database import create_all, dispose_engine, session_scope
+from scraper.afm_nl import fetch_filings as nl_fetch
 from scraper.emarketstorage import ListingItem, fetch_internal_dealing
 from scraper.fi_sweden import fetch_filings as sweden_fetch
 from scraper.http import PoliteClient
@@ -122,9 +123,10 @@ _SOURCES: dict[str, tuple[str, _Fetcher]] = {
     "oneinfo": ("https://www.1info.it", oneinfo_fetch),
 }
 
-# structured sources: fetch already-parsed ParsedFiling objects (e.g. a regulator CSV/API)
+# structured sources: fetch already-parsed ParsedFiling objects (e.g. a regulator CSV/API/HTML)
 _STRUCTURED: dict[str, tuple[str, Callable[..., Awaitable[list]]]] = {
     "fi_sweden": ("https://marknadssok.fi.se", sweden_fetch),
+    "afm_nl": ("https://www.afm.nl", nl_fetch),
 }
 
 _ALL_SOURCES = (*_SOURCES, *_STRUCTURED)
