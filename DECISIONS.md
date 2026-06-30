@@ -2,6 +2,27 @@
 
 Append-only. Each entry: context → decision → reasoning. Newest first within a session.
 
+## Session 2026-06-30 (European expansion)
+
+### D-013 — Germany (BaFin) is off-limits: robots.txt `Disallow: /`
+**Context:** BaFin's managers'-transactions database (`portal.mvp.bafin.de/database/DealingsInfo`)
+is technically scrapable — an empty-issuer + date-range POST returns a clean bulk table (issuer,
+ISIN, PDMR, position, Buy/Sell, date, venue; no price/volume, which BaFin doesn't publish).
+**But `https://portal.mvp.bafin.de/robots.txt` is `User-agent: * / Disallow: /`** — the operator
+forbids all automated access to the entire portal.
+**Decision:** Do **not** ship a BaFin scraper. Our standing policy (CLAUDE.md) is to honour
+robots.txt; the PoliteClient enforced it and refused the request. The adapter and the
+(improperly-recon'd) fixture were removed. Generic "Buy"/"Sell" nature keywords added during the
+attempt are kept — they're source-agnostic.
+**Reasoning:** Honouring robots.txt is the stated, ethical default; public data does not override an
+explicit operator opt-out. Germany would need a licensed/official data feed, not scraping.
+**Lesson:** check `robots.txt` *first* in per-country recon, before building.
+
+### D-012 — France clean source dead → deferred
+The data.gouv "Transactions des dirigeants" dataset points only to `lestransactions.fr`, which no
+longer resolves (the third-party aggregator is gone). France therefore needs official AMF-site
+scraping (PDF/BDIF) — Italy-magnitude work — and is deferred.
+
 ## Session 2026-06-19 (autonomous build, Phase 0+)
 
 ### D-001 — No pre-existing CLAUDE.md; authored from real data
