@@ -10,6 +10,7 @@ from typing import Any
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from api.routes import router
@@ -61,7 +62,16 @@ async def health() -> dict[str, Any]:
     return {"status": "ok", "service": "pdmr-api", "version": "0.1.0"}
 
 
-# minimal static dashboard at /dashboard (no build step)
 _static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+_landing = os.path.join(_static_dir, "landing.html")
+
+
+@app.get("/", include_in_schema=False)
+async def landing() -> FileResponse:
+    """Marketing landing page (progressively enhanced with live API data)."""
+    return FileResponse(_landing)
+
+
+# minimal static dashboard at /dashboard (no build step)
 if os.path.isdir(_static_dir):
     app.mount("/dashboard", StaticFiles(directory=_static_dir, html=True), name="dashboard")

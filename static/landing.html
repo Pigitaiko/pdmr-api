@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PDMR · See what insiders are buying</title>
+<meta name="description" content="Italian insider-dealing filings (Art. 19 MAR), parsed in real time and served as clean data. Public regulatory data — not investment advice." />
+<style>
+  :root{
+    --ink:#0d1411; --paper:#ffffff; --muted:#5f6b66; --line:#e9ecea;
+    --mint:#f1f8f4; --mint2:#e7f4ec;
+    --green:#06c167; --green-d:#069e54; --green-ink:#067a44;
+    --red:#e0524d;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);
+    -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .mono{font-family:var(--mono)}
+  .pos{color:var(--green-ink);font-weight:800}
+
+  /* nav */
+  header.bar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.85);
+    backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand .mark{width:26px;height:26px;border-radius:9px;background:var(--green);
+    display:grid;place-items:center;color:#fff;font-weight:900;font-size:15px;
+    box-shadow:0 4px 12px rgba(6,193,103,.35)}
+  nav.links{display:flex;gap:26px;align-items:center;font-size:15px;color:var(--muted)}
+  nav.links a:hover{color:var(--ink)}
+  .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:700;
+    font-size:15px;padding:11px 20px;cursor:pointer;border:1.5px solid transparent;transition:.15s}
+  .pill.solid{background:var(--green);color:#fff;box-shadow:0 6px 18px rgba(6,193,103,.32)}
+  .pill.solid:hover{background:var(--green-d);transform:translateY(-1px)}
+  .pill.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .pill.ghost:hover{border-color:var(--ink)}
+  .pill.ink{background:var(--ink);color:#fff}
+
+  /* hero */
+  .hero{padding:72px 0 40px}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--mint2);color:var(--green-ink);
+    font-weight:800;font-size:12.5px;letter-spacing:.04em;padding:7px 13px;border-radius:999px}
+  .eyebrow .live{width:8px;height:8px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 0 0 rgba(6,193,103,.6);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(6,193,103,.5)}70%{box-shadow:0 0 0 9px rgba(6,193,103,0)}100%{box-shadow:0 0 0 0 rgba(6,193,103,0)}}
+  h1{font-size:clamp(40px,6vw,68px);line-height:1.02;letter-spacing:-.03em;font-weight:850;margin:20px 0 0}
+  h1 em{font-style:normal;color:var(--green-ink)}
+  .lede{font-size:clamp(17px,2.1vw,21px);color:var(--muted);max-width:34ch;margin:20px 0 0;font-weight:500}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0 0}
+  .trust{display:flex;gap:28px;flex-wrap:wrap;margin:34px 0 0}
+  .trust .n{font-size:26px;font-weight:850;letter-spacing:-.02em}
+  .trust .l{font-size:13px;color:var(--muted);margin-top:1px}
+
+  /* phone mockup */
+  .phone{justify-self:center;width:300px;height:608px;border-radius:46px;background:#0d1411;
+    padding:11px;box-shadow:0 40px 80px -24px rgba(13,20,17,.45),0 0 0 1px rgba(0,0,0,.04);position:relative}
+  .phone::before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);
+    width:120px;height:26px;background:#0d1411;border-radius:0 0 18px 18px;z-index:3}
+  .screen{width:100%;height:100%;border-radius:36px;background:var(--mint);overflow:hidden;position:relative}
+  .screen .top{padding:40px 18px 12px;background:#fff;border-bottom:1px solid var(--line)}
+  .screen .top .h{font-weight:850;font-size:19px;letter-spacing:-.02em}
+  .screen .top .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .screen .feed{padding:12px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .frow{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 13px;
+    display:flex;align-items:center;gap:11px}
+  .frow .av{width:38px;height:38px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;
+    color:#fff;font-weight:900;font-size:14px}
+  .frow .nm{flex:1;min-width:0}
+  .frow .nm b{display:block;font-size:13.5px;font-weight:750;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frow .nm s{display:block;text-decoration:none;font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:1px}
+  .frow .vv{text-align:right}
+  .frow .vv .b{font-weight:850;font-size:14px}
+  .chip{font-family:var(--mono);font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:6px}
+  .chip.A{color:var(--green-ink);background:var(--mint2)}
+  .chip.D{color:var(--red);background:#fdeceb}
+
+  /* sections */
+  section{padding:70px 0}
+  .tint{background:var(--mint);border-block:1px solid var(--line)}
+  .klabel{color:var(--green-ink);font-weight:800;font-size:13px;letter-spacing:.05em}
+  h2{font-size:clamp(28px,3.6vw,40px);letter-spacing:-.025em;font-weight:850;margin:8px 0 0}
+  .sub{color:var(--muted);max-width:60ch;margin:12px 0 0;font-size:16.5px}
+  .head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+
+  /* time filter pills (Autopilot "top performers") */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .fpill{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 15px;
+    font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer}
+  .fpill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* portfolio-style cards */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px}
+  .pcard{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;
+    transition:.15s;cursor:default}
+  .pcard:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(13,20,17,.4)}
+  .pcard .thumb{height:96px;position:relative;display:grid;place-items:center}
+  .pcard .thumb .mono-av{width:52px;height:52px;border-radius:15px;background:rgba(255,255,255,.9);
+    display:grid;place-items:center;font-weight:900;font-size:20px;color:var(--ink);
+    box-shadow:0 6px 16px rgba(0,0,0,.12)}
+  .pcard .thumb .tagpos{position:absolute;top:11px;right:11px;font-family:var(--mono);font-size:10.5px;
+    font-weight:800;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.92)}
+  .tagpos.A{color:var(--green-ink)} .tagpos.D{color:var(--red)}
+  .pcard .body{padding:14px 16px 18px}
+  .pcard .body .iss{font-weight:800;letter-spacing:-.01em;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pcard .body .role{font-size:12.5px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+  .pcard .body .big{font-size:24px;font-weight:850;letter-spacing:-.02em;margin-top:12px}
+  .pcard .body .big .u{font-size:12px;color:var(--muted);font-weight:600;margin-left:6px}
+
+  /* how it works */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+  .step{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 22px}
+  .step .ico{width:46px;height:46px;border-radius:14px;background:var(--mint2);display:grid;place-items:center;
+    font-size:22px}
+  .step .k{font-family:var(--mono);color:var(--green-ink);font-weight:800;font-size:13px;margin-top:16px}
+  .step h3{margin:6px 0 6px;font-size:19px;letter-spacing:-.015em}
+  .step p{margin:0;color:var(--muted);font-size:15px}
+
+  /* api */
+  .api{background:var(--ink);color:#dfeae4;border-radius:22px;padding:30px;margin-top:26px;overflow:auto}
+  .api .kw{color:#3ddc84}.api .str{color:#e7c08a}.api .cm{color:#6f7c76}
+  pre{margin:0;font-family:var(--mono);font-size:13.5px;line-height:1.75;white-space:pre}
+  .eps{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}
+  .ep{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:var(--mono);font-size:13px;background:#fff}
+  .ep .m{color:var(--green-ink);font-weight:800;margin-right:8px}
+
+  .cov{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
+  .legal{border:1px solid var(--line);border-radius:18px;padding:22px 24px;background:#fff;margin-top:22px}
+  .legal h3{margin:0 0 8px;font-size:16px} .legal p{margin:0;color:var(--muted);font-size:14.5px}
+
+  /* big CTA band */
+  .band{background:var(--ink);border-radius:28px;padding:54px 40px;text-align:center;color:#fff;margin:8px 0 0}
+  .band h2{color:#fff} .band p{color:#aeb9b4;margin:12px auto 0;max-width:48ch;font-size:17px}
+  .band .cta{justify-content:center}
+
+  footer{padding:40px 0;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:center}
+
+  @media(max-width:880px){
+    .hero .wrap{grid-template-columns:1fr;gap:36px}
+    .phone{order:-1;width:268px;height:544px}
+    .cards{grid-template-columns:repeat(2,1fr)}
+    .steps,.eps,.cov{grid-template-columns:1fr}
+    nav.links a:not(.pill){display:none}
+  }
+  @media(max-width:520px){ .cards{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="brand"><span class="mark">P</span> PDMR</div>
+    <nav class="links">
+      <a href="#signals">Signals</a>
+      <a href="#how">How it works</a>
+      <a href="#api">API</a>
+      <a class="pill ghost" href="/dashboard">Dashboard</a>
+      <a class="pill solid" href="/docs">Get the API</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow"><span class="live"></span> LIVE · ART. 19 MAR FEED</span>
+      <h1>See what <em>insiders</em> are buying.</h1>
+      <p class="lede">Every director and executive at a listed Italian company has to disclose when they
+        trade their own stock. We surface it the moment it's filed.</p>
+      <div class="cta">
+        <a class="pill solid" href="#signals">Explore signals →</a>
+        <a class="pill ghost" href="/docs">Get the API</a>
+      </div>
+      <div class="trust">
+        <div><div class="n" id="t-filings">198</div><div class="l">filings tracked</div></div>
+        <div><div class="n" id="t-tx">1,049</div><div class="l">transactions</div></div>
+        <div><div class="n">2</div><div class="l">official sources</div></div>
+      </div>
+    </div>
+
+    <!-- phone mockup -->
+    <div class="phone"><div class="screen">
+      <div class="top"><div class="h">Insider Signals</div><div class="s">Open-market buys · today</div></div>
+      <div class="feed" id="phone-feed">
+        <div class="frow"><div class="av" style="background:#06c167">IM</div><div class="nm"><b>IMMSI</b><s>DIR · buy</s></div><div class="vv"><div class="b pos">€191.5k</div><span class="chip A">BUY</span></div></div>
+        <div class="frow"><div class="av" style="background:#0a9d8f">BP</div><div class="nm"><b>Banca Pop. Alto Adige</b><s>DIR · buy</s></div><div class="vv"><div class="b pos">€188.3k</div><span class="chip A">BUY</span></div></div>
+        <div class="frow"><div class="av" style="background:#3b7dd8">PI</div><div class="nm"><b>Pirelli &amp; C.</b><s>DIR · buy</s></div><div class="vv"><div class="b pos">€75.0k</div><span class="chip A">BUY</span></div></div>
+        <div class="frow"><div class="av" style="background:#e0a23b">WI</div><div class="nm"><b>WIIT</b><s>DIR · buy</s></div><div class="vv"><div class="b pos">€67.9k</div><span class="chip A">BUY</span></div></div>
+        <div class="frow"><div class="av" style="background:#c2403d">CE</div><div class="nm"><b>Cembre</b><s>DIR · sell</s></div><div class="vv"><div class="b">€87.9k</div><span class="chip D">SELL</span></div></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- SIGNALS (Autopilot "Top Performers" with time pills + portfolio cards) -->
+<section id="signals" class="tint">
+  <div class="wrap">
+    <div class="head-row">
+      <div>
+        <div class="klabel">Top insider buys</div>
+        <h2>Conviction, ranked.</h2>
+        <p class="sub">Open-market purchases by directors and the C-suite — when insiders put real money
+          into their own company, you see it first.</p>
+      </div>
+      <div class="filters" id="filters">
+        <button class="fpill" data-d="7">1W</button>
+        <button class="fpill on" data-d="30">1M</button>
+        <button class="fpill" data-d="90">3M</button>
+        <button class="fpill" data-d="180">6M</button>
+        <button class="fpill" data-d="0">All</button>
+      </div>
+    </div>
+    <div class="cards" id="cards">
+      <!-- static fallback; replaced live when the API is up -->
+      <div class="pcard"><div class="thumb" style="background:linear-gradient(135deg,#e7f4ec,#c9ead6)"><div class="mono-av">IM</div><span class="tagpos A">BUY</span></div>
+        <div class="body"><div class="iss">IMMSI SPA</div><div class="role">DIR · 2026-06-24</div><div class="big pos">€191,520<span class="u">@ 0.504</span></div></div></div>
+      <div class="pcard"><div class="thumb" style="background:linear-gradient(135deg,#e3f3f1,#c3e7e2)"><div class="mono-av">BP</div><span class="tagpos A">BUY</span></div>
+        <div class="body"><div class="iss">Banca Pop. Alto Adige</div><div class="role">DIR · 2026-06-24</div><div class="big pos">€188,250<span class="u">@ 12.55</span></div></div></div>
+      <div class="pcard"><div class="thumb" style="background:linear-gradient(135deg,#e6eefb,#cadcf6)"><div class="mono-av">PI</div><span class="tagpos A">BUY</span></div>
+        <div class="body"><div class="iss">PIRELLI &amp; C. SPA</div><div class="role">DIR · 2026-06-11</div><div class="big pos">€74,973<span class="u">@ 6.165</span></div></div></div>
+      <div class="pcard"><div class="thumb" style="background:linear-gradient(135deg,#fbf2e0,#f4e2bf)"><div class="mono-av">WI</div><span class="tagpos A">BUY</span></div>
+        <div class="body"><div class="iss">WIIT SPA</div><div class="role">DIR · 2026-06-19</div><div class="big pos">€67,875<span class="u">@ 33.94</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <div class="klabel">How it works</div>
+    <h2>Three steps. That's it.</h2>
+    <div class="steps">
+      <div class="step"><div class="ico">🔎</div><div class="k">01</div><h3>Pick an issuer or role</h3>
+        <p>Filter by company, by role (CEO, CFO, board), by buy or sell, by deal size — whatever you're watching.</p></div>
+      <div class="step"><div class="ico">📄</div><div class="k">02</div><h3>We read every filing</h3>
+        <p>The moment an insider files the Allegato 3F form, we parse it into clean, structured fields.</p></div>
+      <div class="step"><div class="ico">⚡</div><div class="k">03</div><h3>Get it as data</h3>
+        <p>Query it through a documented REST API, or poll the feed for everything ingested since your last check.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- API -->
+<section id="api" class="tint">
+  <div class="wrap">
+    <div class="klabel">For developers</div>
+    <h2>One request away.</h2>
+    <p class="sub">No scraping, no PDF wrangling. Hit the endpoint, get JSON.</p>
+    <div class="api"><pre><span class="cm"># Open-market C-suite buys over €50k, newest first</span>
+<span class="kw">curl</span> <span class="str">'https://api.example.com/v1/transactions?type=A&amp;min_value=50000'</span>
+
+{ <span class="str">"data"</span>: [{
+    <span class="str">"issuer_name"</span>: <span class="str">"ITALGAS SPA"</span>,
+    <span class="str">"transaction_type"</span>: <span class="str">"A"</span>,        <span class="cm">// A = buy, D = sell</span>
+    <span class="str">"role_code"</span>: <span class="str">"MGMT"</span>,
+    <span class="str">"isin"</span>: <span class="str">"IT0005211237"</span>,
+    <span class="str">"price"</span>: <span class="str">"10.723000"</span>,        <span class="cm">// exact decimals, never float</span>
+    <span class="str">"volume"</span>: <span class="str">"5725"</span>,
+    <span class="str">"signal_value"</span>: <span class="str">"61389.18"</span>,
+    <span class="str">"transaction_date"</span>: <span class="str">"2026-06-16"</span>
+  }],
+  <span class="str">"meta"</span>: { <span class="str">"total"</span>: 57, <span class="str">"limit"</span>: 50, <span class="str">"offset"</span>: 0 } }</pre></div>
+    <div class="eps">
+      <div class="ep"><span class="m">GET</span>/v1/transactions <span style="color:var(--muted)">— filter &amp; paginate</span></div>
+      <div class="ep"><span class="m">GET</span>/v1/signals <span style="color:var(--muted)">— ranked C-suite buys</span></div>
+      <div class="ep"><span class="m">GET</span>/v1/feed?since= <span style="color:var(--muted)">— poll new filings</span></div>
+      <div class="ep"><span class="m">GET</span>/v1/issuers · /v1/persons</div>
+    </div>
+  </div>
+</section>
+
+<!-- COVERAGE + LEGAL -->
+<section id="coverage">
+  <div class="wrap">
+    <div class="klabel">Coverage</div>
+    <h2>Both official sources. The whole market.</h2>
+    <div class="cov">
+      <div class="step"><h3>eMarketStorage <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">Teleborsa's authorized storage system — fully parsed, ~97% clean extraction on real filings.</p></div>
+      <div class="step"><h3>1Info <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">Computershare's authorized system via its JSON API — the other half of the market's issuers, never dropped.</p></div>
+    </div>
+    <div class="legal">
+      <h3>What this is — and isn't</h3>
+      <p>These are mandatory <b>public</b> disclosures under Article 19 of the Market Abuse Regulation
+        (EU 596/2014). We parse individual public filings; we don't redistribute any operator's database.
+        This is a data feed — <b>not investment advice</b>, and not a brokerage or any MiFID-II-regulated service.</p>
+    </div>
+
+    <div class="band">
+      <h2>Build on the insider feed.</h2>
+      <p>The machine-readable Italian internal-dealing data that doesn't exist anywhere else in Europe.</p>
+      <div class="cta"><a class="pill solid" href="/docs">Open the API docs →</a>
+        <a class="pill ghost" style="background:transparent;color:#fff;border-color:#3a443f" href="/dashboard">See the dashboard</a></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><span class="mark">P</span> PDMR</div>
+    <div>Public Art. 19 MAR filings · Not investment advice · <a href="/docs">API</a> · <a href="/health">Status</a></div>
+  </div>
+</footer>
+
+<script>
+  const GRADS=[['#e7f4ec','#c9ead6'],['#e3f3f1','#c3e7e2'],['#e6eefb','#cadcf6'],['#fbf2e0','#f4e2bf'],['#f3e9fb','#e2d2f4'],['#fdeceb','#f8d4d2']];
+  const AVCOL=['#06c167','#0a9d8f','#3b7dd8','#e0a23b','#8b5cf6','#c2403d'];
+  const initials=s=>(s||'?').replace(/[^A-Za-z ]/g,'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?';
+  const kEur=n=>{n=Number(n)||0;return n>=1000?'€'+(n/1000).toFixed(1)+'k':'€'+Math.round(n);};
+  const fEur=n=>'€'+Math.round(Number(n)||0).toLocaleString('en-US');
+  const num=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
+  const ttype=t=>t==='A'?'BUY':t==='D'?'SELL':'OTHER';
+
+  let SIGNALS=[];           // cached full signal set for client-side time filtering
+  let activeDays=30;
+
+  function renderCards(){
+    const cut = activeDays ? Date.now()-activeDays*864e5 : 0;
+    const rows = SIGNALS
+      .filter(t=>!cut || (t.transaction_date && Date.parse(t.transaction_date)>=cut))
+      .slice(0,4);
+    if(!rows.length) return; // keep static fallback if nothing in window
+    document.getElementById('cards').innerHTML = rows.map((t,i)=>{
+      const g=GRADS[i%GRADS.length];
+      return `<div class="pcard"><div class="thumb" style="background:linear-gradient(135deg,${g[0]},${g[1]})">
+        <div class="mono-av">${initials(t.issuer_name)}</div><span class="tagpos ${t.transaction_type}">${ttype(t.transaction_type)}</span></div>
+        <div class="body"><div class="iss">${t.issuer_name||''}</div>
+          <div class="role">${t.role_code||'—'} · ${t.transaction_date||''}</div>
+          <div class="big ${t.transaction_type==='A'?'pos':''}">${fEur(t.signal_value)}<span class="u">@ ${num(t.price)}</span></div>
+        </div></div>`;
+    }).join('');
+  }
+
+  document.getElementById('filters').addEventListener('click',e=>{
+    const b=e.target.closest('.fpill'); if(!b) return;
+    document.querySelectorAll('.fpill').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); activeDays=Number(b.dataset.d); renderCards();
+  });
+
+  async function hydrate(){
+    try{
+      const sig = await fetch('/v1/signals?min_value=10000&limit=40').then(r=>r.ok?r.json():null).catch(()=>null);
+      if(sig&&sig.data&&sig.data.length){ SIGNALS=sig.data; renderCards(); }
+
+      const tx = await fetch('/v1/transactions?limit=6').then(r=>r.ok?r.json():null).catch(()=>null);
+      if(tx&&tx.data&&tx.data.length){
+        document.getElementById('phone-feed').innerHTML = tx.data.slice(0,5).map((t,i)=>`
+          <div class="frow"><div class="av" style="background:${AVCOL[i%AVCOL.length]}">${initials(t.issuer_name)}</div>
+            <div class="nm"><b>${t.issuer_name||''}</b><s>${(t.role_code||'—')} · ${ttype(t.transaction_type).toLowerCase()}</s></div>
+            <div class="vv"><div class="b ${t.transaction_type==='A'?'pos':''}">${kEur(t.signal_value)}</div>
+              <span class="chip ${t.transaction_type}">${ttype(t.transaction_type)}</span></div></div>`).join('');
+        if(tx.meta) document.getElementById('t-tx').textContent=tx.meta.total.toLocaleString('en-US');
+      }
+      const feed = await fetch('/v1/feed?limit=1').then(r=>r.ok?r.json():null).catch(()=>null);
+      if(feed&&feed.meta) document.getElementById('t-filings').textContent=feed.meta.total.toLocaleString('en-US');
+    }catch(e){/* keep static fallback */}
+  }
+  hydrate();
+</script>
+</body>
+</html>
