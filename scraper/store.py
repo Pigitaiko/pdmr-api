@@ -72,6 +72,7 @@ async def upsert_filing(session: AsyncSession, parsed: ParsedFiling) -> tuple[Fi
         issuer_id=issuer.id,
         person_id=person.id,
         source=parsed.source,
+        country=parsed.country,
         source_url=parsed.source_url,
         title=parsed.title,
         market=parsed.market,

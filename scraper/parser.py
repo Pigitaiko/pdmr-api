@@ -39,7 +39,7 @@ ITALIAN_MONTHS = {
 
 # ---- code mappings (see CLAUDE.md "Code mappings") -------------------------------------------
 
-_ACQUISITION = ("ACQUIST", "ACQUISIZIONE", "SOTTOSCRIZIONE", "SUBSCRIPTION", "PURCHASE")
+_ACQUISITION = ("ACQUIS", "SOTTOSCRIZIONE", "SUBSCRIPTION", "SUBSCRIBE", "PURCHASE")
 _DISPOSAL = ("CESSIONE", "VENDITA", "SALE", "DISPOSAL")
 
 
@@ -71,7 +71,7 @@ def map_role_code(role_raw: str | None, position_status: str | None = None) -> s
         or "board" in text
     ):
         return "DIR"
-    if "direzione" in text or "management" in text:
+    if "direzione" in text or "management" in text or "executive" in text:
         return "MGMT"
     if "controllo" in text or "control" in text:
         return "CTRL"
@@ -157,6 +157,7 @@ class ParsedTransaction(BaseModel):
 class ParsedFiling(BaseModel):
     filing_id: str | None = None
     source: str = "emarketstorage"
+    country: str = "IT"
     source_url: str | None = None
     title: str | None = None
     market: str | None = None

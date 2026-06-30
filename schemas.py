@@ -43,6 +43,7 @@ class TransactionOut(BaseModel):
     venue_mic: str | None
     linked_to_option_programme: bool | None
     # denormalised filing context (populated when the filing/issuer/person are eager-loaded)
+    country: str | None = None
     issuer_name: str | None = None
     person_name: str | None = None
     is_legal_person: bool | None = None
@@ -59,6 +60,7 @@ class TransactionOut(BaseModel):
         out = cls.model_validate(tx)
         filing = tx.filing
         if filing is not None:
+            out.country = filing.country
             out.role_code = filing.role_code
             out.position_status = filing.position_status
             out.filing_ref = filing.filing_id

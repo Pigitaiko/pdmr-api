@@ -65,6 +65,9 @@ class Filing(Base):
     issuer_id: Mapped[int] = mapped_column(ForeignKey("issuers.id"), index=True)
     person_id: Mapped[int] = mapped_column(ForeignKey("persons.id"), index=True)
     source: Mapped[str] = mapped_column(String(32), index=True)
+    country: Mapped[str] = mapped_column(
+        String(2), default="IT", server_default="IT", index=True
+    )
     source_url: Mapped[str | None] = mapped_column(String(1024))
     title: Mapped[str | None] = mapped_column(String(1024))
     market: Mapped[str | None] = mapped_column(String(128))

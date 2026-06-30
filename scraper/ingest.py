@@ -21,6 +21,7 @@ import structlog
 from config import get_settings
 from database import create_all, dispose_engine, session_scope
 from scraper.emarketstorage import ListingItem, fetch_internal_dealing
+from scraper.fi_sweden import fetch_filings as sweden_fetch
 from scraper.http import PoliteClient
 from scraper.oneinfo import fetch_internal_dealing as oneinfo_fetch
 from scraper.parser import parse_filing
@@ -89,11 +90,44 @@ async def _ingest_one(client: PoliteClient, item: ListingItem) -> str:
     return parsed.parse_status if created else "duplicate"
 
 
+async def _persist(parsed) -> str:  # noqa: ANN001 - ParsedFiling
+    """Upsert an already-parsed filing (used by structured sources). Returns status."""
+    async with session_scope() as session:
+        _, created = await upsert_filing(session, parsed)
+    log.info(
+        "ingest",
+        filing_id=parsed.filing_id,
+        issuer=parsed.issuer_name,
+        country=parsed.country,
+        status=parsed.parse_status,
+        transactions=len(parsed.transactions),
+        created=created,
+    )
+    return parsed.parse_status if created else "duplicate"
+
+
+def _tally(stats: dict[str, int], result: str) -> None:
+    if result == "duplicate":
+        stats["duplicates"] += 1
+    else:
+        stats["ingested"] += 1
+        if result in ("failed", "partial"):
+            stats[result] += 1
+
+
+# PDF/filing sources: discover ListingItems -> download -> parse -> upsert
 _Fetcher = Callable[..., Awaitable[list[ListingItem]]]
 _SOURCES: dict[str, tuple[str, _Fetcher]] = {
     "emarketstorage": ("https://www.emarketstorage.it", fetch_internal_dealing),
     "oneinfo": ("https://www.1info.it", oneinfo_fetch),
 }
+
+# structured sources: fetch already-parsed ParsedFiling objects (e.g. a regulator CSV/API)
+_STRUCTURED: dict[str, tuple[str, Callable[..., Awaitable[list]]]] = {
+    "fi_sweden": ("https://marknadssok.fi.se", sweden_fetch),
+}
+
+_ALL_SOURCES = (*_SOURCES, *_STRUCTURED)
 
 
 async def run(
@@ -103,16 +137,35 @@ async def run(
         await create_all()
     if source == "all":
         merged = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
-        for src in ("emarketstorage", "oneinfo"):
+        for src in _ALL_SOURCES:
             for k, v in (await run(max_pages, src)).items():
                 merged[k] += v
         return merged
-    if source not in _SOURCES:
-        raise ValueError(f"unknown source: {source}")
-    base_url, fetcher = _SOURCES[source]
 
     stats = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
     seen = SeenStore()
+
+    if source in _STRUCTURED:
+        base_url, fetcher = _STRUCTURED[source]
+        async with PoliteClient(base_url=base_url) as client:
+            filings = await fetcher(client)
+            stats["discovered"] = len(filings)
+            for parsed in filings:
+                if not parsed.filing_id or not await seen.is_new(parsed.filing_id):
+                    stats["duplicates"] += 1
+                    continue
+                try:
+                    _tally(stats, await _persist(parsed))
+                except Exception as exc:  # noqa: BLE001 - one row never kills the batch
+                    log.error("ingest_failed", filing_id=parsed.filing_id, error=str(exc))
+                    stats["failed"] += 1
+        await seen.aclose()
+        log.info("ingest_summary", source=source, **stats)
+        return stats
+
+    if source not in _SOURCES:
+        raise ValueError(f"unknown source: {source}")
+    base_url, fetcher = _SOURCES[source]
     async with PoliteClient(base_url=base_url) as client:
         items = await fetcher(client, max_pages=max_pages)
         stats["discovered"] = len(items)
@@ -121,19 +174,12 @@ async def run(
                 stats["duplicates"] += 1
                 continue
             try:
-                result = await _ingest_one(client, item)
+                _tally(stats, await _ingest_one(client, item))
             except Exception as exc:  # noqa: BLE001 - never let one filing kill the batch
                 log.error("ingest_failed", url=item.url, error=str(exc))
                 stats["failed"] += 1
-                continue
-            if result == "duplicate":
-                stats["duplicates"] += 1
-            else:
-                stats["ingested"] += 1
-                if result in ("failed", "partial"):
-                    stats[result] += 1
     await seen.aclose()
-    log.info("ingest_summary", **stats)
+    log.info("ingest_summary", source=source, **stats)
     return stats
 
 

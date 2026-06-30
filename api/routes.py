@@ -36,6 +36,7 @@ _TX_LOADERS = (
 async def list_transactions(
     session: AsyncSession = SessionDep,
     issuer: str | None = Query(None, description="issuer name or LEI substring"),
+    country: str | None = Query(None, description="ISO-2 country code, e.g. IT, SE"),
     from_: date | None = Query(None, alias="from", description="transaction_date >="),
     to: date | None = Query(None, description="transaction_date <="),
     type: str | None = Query(None, description="transaction_type A/D/O"),
@@ -58,6 +59,8 @@ async def list_transactions(
     filing_conditions = []
     if role:
         filing_conditions.append(Filing.role_code == role.upper())
+    if country:
+        filing_conditions.append(Filing.country == country.upper())
     if source:
         filing_conditions.append(Filing.source == source)
     if issuer:
