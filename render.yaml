@@ -1,6 +1,10 @@
-# Render Blueprint — one-click deploy of the whole stack.
+# Render Blueprint — one-click deploy of the API + landing page + Postgres.
 # Dashboard → New → Blueprint → connect this repo → Apply.
 # See DEPLOY.md for step-by-step instructions.
+#
+# Redis is intentionally omitted: the app degrades gracefully without it (in-process
+# rate-limiting + DB-level dedup), and dropping it keeps the blueprint simple/robust.
+# To add it later, create a Key Value instance in the Render dashboard and set REDIS_URL.
 
 databases:
   - name: pdmr-db
@@ -9,14 +13,6 @@ databases:
     plan: free # free Postgres (expires ~30 days; upgrade to keep it)
 
 services:
-  # Redis / Key Value — optional. The app degrades gracefully without it (in-process
-  # rate-limiting + DB-level dedup). If the blueprint errors on this block, delete this
-  # service and the two REDIS_URL env vars below; everything still works.
-  - type: keyvalue
-    name: pdmr-redis
-    plan: free
-    ipAllowList: [] # internal access only
-
   # The API + landing page. Runs migrations on boot, then serves; bootstraps real data
   # on first start via a background scrape (no paid worker needed).
   - type: web
@@ -30,11 +26,6 @@ services:
       - key: DATABASE_URL
         fromDatabase:
           name: pdmr-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: pdmr-redis
           property: connectionString
       - key: USER_AGENT
         value: "PDMR-API-bot/0.1 (+contact@pdmr-api.example)"
