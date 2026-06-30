@@ -47,6 +47,9 @@ async def test_list_transactions_meta_and_shape(client):
     assert tx["issuer_name"]
     assert tx["role_code"]
     assert tx["filing_ref"]
+    # the insider's name is surfaced inline (present for the eMarketStorage fixtures)
+    assert "person_name" in tx and tx["person_name"]
+    assert "is_legal_person" in tx
 
 
 async def test_filter_by_type_buys(client):

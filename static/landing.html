@@ -333,7 +333,7 @@
       return `<div class="pcard"><div class="thumb" style="background:linear-gradient(135deg,${g[0]},${g[1]})">
         <div class="mono-av">${initials(t.issuer_name)}</div><span class="tagpos ${t.transaction_type}">${ttype(t.transaction_type)}</span></div>
         <div class="body"><div class="iss">${t.issuer_name||''}</div>
-          <div class="role">${t.role_code||'—'} · ${t.transaction_date||''}</div>
+          <div class="role">${t.person_name ? t.person_name + ' · ' : ''}${t.role_code||'—'} · ${t.transaction_date||''}</div>
           <div class="big ${t.transaction_type==='A'?'pos':''}">${fEur(t.signal_value)}<span class="u">@ ${num(t.price)}</span></div>
         </div></div>`;
     }).join('');
@@ -354,7 +354,7 @@
       if(tx&&tx.data&&tx.data.length){
         document.getElementById('phone-feed').innerHTML = tx.data.slice(0,5).map((t,i)=>`
           <div class="frow"><div class="av" style="background:${AVCOL[i%AVCOL.length]}">${initials(t.issuer_name)}</div>
-            <div class="nm"><b>${t.issuer_name||''}</b><s>${(t.role_code||'—')} · ${ttype(t.transaction_type).toLowerCase()}</s></div>
+            <div class="nm"><b>${t.issuer_name||''}</b><s>${t.person_name ? t.person_name + ' · ' : ''}${ttype(t.transaction_type).toLowerCase()}</s></div>
             <div class="vv"><div class="b ${t.transaction_type==='A'?'pos':''}">${kEur(t.signal_value)}</div>
               <span class="chip ${t.transaction_type}">${ttype(t.transaction_type)}</span></div></div>`).join('');
         if(tx.meta) document.getElementById('t-tx').textContent=tx.meta.total.toLocaleString('en-US');

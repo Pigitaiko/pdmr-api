@@ -42,9 +42,12 @@ class TransactionOut(BaseModel):
     venue: str | None
     venue_mic: str | None
     linked_to_option_programme: bool | None
-    # denormalised filing context (populated when the filing/issuer are eager-loaded)
+    # denormalised filing context (populated when the filing/issuer/person are eager-loaded)
     issuer_name: str | None = None
+    person_name: str | None = None
+    is_legal_person: bool | None = None
     role_code: str | None = None
+    position_status: str | None = None
     filing_ref: str | None = None
 
     @field_serializer("price", "volume", "signal_value")
@@ -57,9 +60,13 @@ class TransactionOut(BaseModel):
         filing = tx.filing
         if filing is not None:
             out.role_code = filing.role_code
+            out.position_status = filing.position_status
             out.filing_ref = filing.filing_id
             if filing.issuer is not None:
                 out.issuer_name = filing.issuer.name
+            if filing.person is not None:
+                out.person_name = filing.person.full_name
+                out.is_legal_person = filing.person.is_legal_person
         return out
 
 

@@ -26,7 +26,10 @@ from schemas import (
 
 router = APIRouter(prefix="/v1")
 
-_TX_LOADERS = (selectinload(Transaction.filing).selectinload(Filing.issuer),)
+_TX_LOADERS = (
+    selectinload(Transaction.filing).selectinload(Filing.issuer),
+    selectinload(Transaction.filing).selectinload(Filing.person),
+)
 
 
 @router.get("/transactions", response_model=TransactionListOut, dependencies=[RateLimitDep])
