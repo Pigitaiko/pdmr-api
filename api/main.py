@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -16,6 +17,30 @@ from fastapi.staticfiles import StaticFiles
 from api.routes import router
 from config import get_settings
 from database import dispose_engine
+
+log = structlog.get_logger()
+
+
+async def _bootstrap_scrape_if_empty() -> None:
+    """One-shot background ingest on first boot when the DB has no filings. Lets the cloud
+    deploy serve real data without a separate always-on scraper worker."""
+    try:
+        from sqlalchemy import func, select
+
+        from database import session_scope
+        from models import Filing
+
+        async with session_scope() as session:
+            count = (await session.execute(select(func.count()).select_from(Filing))).scalar_one()
+        if count:
+            return
+        from scraper.ingest import run
+
+        log.info("bootstrap_scrape_start")
+        stats = await run(max_pages=get_settings().bootstrap_max_pages, source="all")
+        log.info("bootstrap_scrape_done", **stats)
+    except Exception as exc:  # noqa: BLE001 - never let bootstrap crash the app
+        log.error("bootstrap_scrape_failed", error=str(exc))
 
 
 def _configure_logging() -> None:
@@ -33,6 +58,8 @@ def _configure_logging() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _configure_logging()
+    if get_settings().bootstrap_scrape:
+        asyncio.create_task(_bootstrap_scrape_if_empty())  # noqa: RUF006 - fire-and-forget
     yield
     await dispose_engine()
 

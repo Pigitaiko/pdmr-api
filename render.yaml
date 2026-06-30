@@ -1,0 +1,46 @@
+# Render Blueprint — one-click deploy of the whole stack.
+# Dashboard → New → Blueprint → connect this repo → Apply.
+# See DEPLOY.md for step-by-step instructions.
+
+databases:
+  - name: pdmr-db
+    databaseName: pdmr
+    user: pdmr
+    plan: free # free Postgres (expires ~30 days; upgrade to keep it)
+
+services:
+  # Redis / Key Value — optional. The app degrades gracefully without it (in-process
+  # rate-limiting + DB-level dedup). If the blueprint errors on this block, delete this
+  # service and the two REDIS_URL env vars below; everything still works.
+  - type: keyvalue
+    name: pdmr-redis
+    plan: free
+    ipAllowList: [] # internal access only
+
+  # The API + landing page. Runs migrations on boot, then serves; bootstraps real data
+  # on first start via a background scrape (no paid worker needed).
+  - type: web
+    name: pdmr-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free # free web service (cold-starts after ~15 min idle)
+    healthCheckPath: /health
+    dockerCommand: sh -c "uv run alembic upgrade head && uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pdmr-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: pdmr-redis
+          property: connectionString
+      - key: USER_AGENT
+        value: "PDMR-API-bot/0.1 (+contact@pdmr-api.example)"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: BOOTSTRAP_SCRAPE
+        value: "true" # background-ingest real data on first boot
+      - key: BOOTSTRAP_MAX_PAGES
+        value: "6"
