@@ -170,18 +170,18 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <span class="eyebrow"><span class="live"></span> LIVE · ART. 19 MAR FEED</span>
-      <h1>See what <em>insiders</em> are buying.</h1>
-      <p class="lede">Every director and executive at a listed Italian company has to disclose when they
-        trade their own stock. We surface it the moment it's filed.</p>
+      <span class="eyebrow"><span class="live"></span> LIVE · 🇮🇹 🇸🇪 🇳🇱 🇫🇷 · ART. 19 MAR</span>
+      <h1>See what <em>insiders</em> are buying — across Europe.</h1>
+      <p class="lede">Every director and executive at a listed European company has to disclose when
+        they trade their own stock. We aggregate it the moment it's filed — one API, every market.</p>
       <div class="cta">
         <a class="pill solid" href="#signals">Explore signals →</a>
         <a class="pill ghost" href="/docs">Get the API</a>
       </div>
       <div class="trust">
-        <div><div class="n" id="t-filings">198</div><div class="l">filings tracked</div></div>
-        <div><div class="n" id="t-tx">1,049</div><div class="l">transactions</div></div>
-        <div><div class="n">2</div><div class="l">official sources</div></div>
+        <div><div class="n" id="t-filings">2,000+</div><div class="l">filings tracked</div></div>
+        <div><div class="n" id="t-tx">3,000+</div><div class="l">transactions</div></div>
+        <div><div class="n">4</div><div class="l">countries</div></div>
       </div>
     </div>
 
@@ -210,11 +210,11 @@
           into their own company, you see it first.</p>
       </div>
       <div class="filters" id="filters">
-        <button class="fpill" data-d="7">1W</button>
-        <button class="fpill on" data-d="30">1M</button>
-        <button class="fpill" data-d="90">3M</button>
-        <button class="fpill" data-d="180">6M</button>
-        <button class="fpill" data-d="0">All</button>
+        <button class="fpill on" data-c="">All</button>
+        <button class="fpill" data-c="IT">🇮🇹 Italy</button>
+        <button class="fpill" data-c="SE">🇸🇪 Sweden</button>
+        <button class="fpill" data-c="NL">🇳🇱 Netherlands</button>
+        <button class="fpill" data-c="FR">🇫🇷 France</button>
       </div>
     </div>
     <div class="cards" id="cards">
@@ -280,12 +280,18 @@
 <section id="coverage">
   <div class="wrap">
     <div class="klabel">Coverage</div>
-    <h2>Both official sources. The whole market.</h2>
-    <div class="cov">
-      <div class="step"><h3>eMarketStorage <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">Teleborsa's authorized storage system — fully parsed, ~97% clean extraction on real filings.</p></div>
-      <div class="step"><h3>1Info <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">Computershare's authorized system via its JSON API — the other half of the market's issuers, never dropped.</p></div>
+    <h2>Four markets. One normalized feed.</h2>
+    <p class="sub">Every country publishes the same Art. 19 disclosure in a different way — PDF, CSV,
+      XML, JSON. We do the integration once and hand you one clean schema.</p>
+    <div class="cov" style="grid-template-columns:repeat(2,1fr)">
+      <div class="step"><h3>🇮🇹 Italy <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">eMarketStorage + 1Info — the two authorized storage systems (PDF filings).</p></div>
+      <div class="step"><h3>🇸🇪 Sweden <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">Finansinspektionen's open PDMR register — structured CSV, prices in SEK.</p></div>
+      <div class="step"><h3>🇳🇱 Netherlands <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">AFM managers'-transactions register — XML index + per-record detail.</p></div>
+      <div class="step"><h3>🇫🇷 France <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">AMF BDIF — the déclarations des dirigeants via its JSON API + PDFs.</p></div>
     </div>
     <div class="legal">
       <h3>What this is — and isn't</h3>
@@ -296,7 +302,7 @@
 
     <div class="band">
       <h2>Build on the insider feed.</h2>
-      <p>The machine-readable Italian internal-dealing data that doesn't exist anywhere else in Europe.</p>
+      <p>Machine-readable European insider-dealing data — normalized across markets — that doesn't exist anywhere else.</p>
       <div class="cta"><a class="pill solid" href="/docs">Open the API docs →</a>
         <a class="pill ghost" style="background:transparent;color:#fff;border-color:#3a443f" href="/dashboard">See the dashboard</a></div>
     </div>
@@ -318,20 +324,20 @@
   const fEur=n=>'€'+Math.round(Number(n)||0).toLocaleString('en-US');
   const num=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
   const ttype=t=>t==='A'?'BUY':t==='D'?'SELL':'OTHER';
+  const FLAG={IT:'🇮🇹',SE:'🇸🇪',NL:'🇳🇱',FR:'🇫🇷',DE:'🇩🇪'};
+  const flag=c=>FLAG[c]||'🇪🇺';
 
-  let SIGNALS=[];           // cached full signal set for client-side time filtering
-  let activeDays=30;
+  let SIGNALS=[];              // cached cross-country buys (sorted by value)
+  let activeCountry='';       // '' = all
 
   function renderCards(){
-    const cut = activeDays ? Date.now()-activeDays*864e5 : 0;
-    const rows = SIGNALS
-      .filter(t=>!cut || (t.transaction_date && Date.parse(t.transaction_date)>=cut))
-      .slice(0,4);
-    if(!rows.length) return; // keep static fallback if nothing in window
+    const rows = SIGNALS.filter(t=>!activeCountry || t.country===activeCountry).slice(0,4);
+    if(!rows.length) return;  // keep static fallback if empty
     document.getElementById('cards').innerHTML = rows.map((t,i)=>{
       const g=GRADS[i%GRADS.length];
       return `<div class="pcard"><div class="thumb" style="background:linear-gradient(135deg,${g[0]},${g[1]})">
-        <div class="mono-av">${initials(t.issuer_name)}</div><span class="tagpos ${t.transaction_type}">${ttype(t.transaction_type)}</span></div>
+        <div class="mono-av">${initials(t.issuer_name)}</div>
+        <span class="tagpos ${t.transaction_type}">${flag(t.country)} ${ttype(t.transaction_type)}</span></div>
         <div class="body"><div class="iss">${t.issuer_name||''}</div>
           <div class="role">${t.person_name ? t.person_name + ' · ' : ''}${t.role_code||'—'} · ${t.transaction_date||''}</div>
           <div class="big ${t.transaction_type==='A'?'pos':''}">${fEur(t.signal_value)}<span class="u">@ ${num(t.price)}</span></div>
@@ -342,19 +348,26 @@
   document.getElementById('filters').addEventListener('click',e=>{
     const b=e.target.closest('.fpill'); if(!b) return;
     document.querySelectorAll('.fpill').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on'); activeDays=Number(b.dataset.d); renderCards();
+    b.classList.add('on'); activeCountry=b.dataset.c||''; renderCards();
   });
 
   async function hydrate(){
     try{
-      const sig = await fetch('/v1/signals?min_value=10000&limit=40').then(r=>r.ok?r.json():null).catch(()=>null);
-      if(sig&&sig.data&&sig.data.length){ SIGNALS=sig.data; renderCards(); }
+      // cross-country open-market buys, ranked by value (client-side sort)
+      const sig = await fetch('/v1/transactions?type=A&min_value=10000&limit=80')
+        .then(r=>r.ok?r.json():null).catch(()=>null);
+      if(sig&&sig.data&&sig.data.length){
+        SIGNALS = sig.data
+          .filter(t=>t.signal_value!=null)
+          .sort((a,b)=>Number(b.signal_value)-Number(a.signal_value));
+        renderCards();
+      }
 
       const tx = await fetch('/v1/transactions?limit=6').then(r=>r.ok?r.json():null).catch(()=>null);
       if(tx&&tx.data&&tx.data.length){
         document.getElementById('phone-feed').innerHTML = tx.data.slice(0,5).map((t,i)=>`
           <div class="frow"><div class="av" style="background:${AVCOL[i%AVCOL.length]}">${initials(t.issuer_name)}</div>
-            <div class="nm"><b>${t.issuer_name||''}</b><s>${t.person_name ? t.person_name + ' · ' : ''}${ttype(t.transaction_type).toLowerCase()}</s></div>
+            <div class="nm"><b>${flag(t.country)} ${t.issuer_name||''}</b><s>${t.person_name ? t.person_name + ' · ' : ''}${ttype(t.transaction_type).toLowerCase()}</s></div>
             <div class="vv"><div class="b ${t.transaction_type==='A'?'pos':''}">${kEur(t.signal_value)}</div>
               <span class="chip ${t.transaction_type}">${ttype(t.transaction_type)}</span></div></div>`).join('');
         if(tx.meta) document.getElementById('t-tx').textContent=tx.meta.total.toLocaleString('en-US');

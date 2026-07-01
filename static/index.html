@@ -52,6 +52,7 @@
       sells:   "/v1/transactions?type=D&limit=100",
     };
     const fmt = (n) => n == null ? "—" : Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
+    const FLAG = {IT:"🇮🇹",SE:"🇸🇪",NL:"🇳🇱",FR:"🇫🇷",DE:"🇩🇪"};
 
     async function load(mode) {
       const res = await fetch(ENDPOINTS[mode]);
@@ -65,7 +66,7 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${t.transaction_date || "—"}</td>
-          <td>${t.issuer_name || ""}</td>
+          <td>${FLAG[t.country] || "🇪🇺"} ${t.issuer_name || ""}</td>
           <td>${t.person_name || "—"}</td>
           <td class="${t.transaction_type}">${t.transaction_type}</td>
           <td>${t.role_code || "—"}</td>
