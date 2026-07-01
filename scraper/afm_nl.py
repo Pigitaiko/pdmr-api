@@ -38,8 +38,15 @@ AMSTERDAM = ZoneInfo("Europe/Amsterdam")
 
 _LEGAL_HINT = (" N.V.", " B.V.", " NV", " BV", " S.A.", " AG", " LTD", "HOLDING")
 _DETAIL_COLS = (
-    "Instrument type", "ISIN", "Transaction category", "Transaction type",
-    "Stock option program", "Trading place", "Price", "Quantity", "Unit",
+    "Instrument type",
+    "ISIN",
+    "Transaction category",
+    "Transaction type",
+    "Stock option program",
+    "Trading place",
+    "Price",
+    "Quantity",
+    "Unit",
 )
 
 
@@ -144,9 +151,12 @@ def build_filing(rec: IndexRecord, detail_html: str) -> ParsedFiling:
         raw_text=detail_html[:4000],
         transactions=txs,
     )
-    ok = bool(out.issuer_name and out.person_full_name and txs and all(
-        t.volume is not None and t.transaction_date is not None for t in txs
-    ))
+    ok = bool(
+        out.issuer_name
+        and out.person_full_name
+        and txs
+        and all(t.volume is not None and t.transaction_date is not None for t in txs)
+    )
     out.parse_status = "success" if ok else "partial"
     return out
 
