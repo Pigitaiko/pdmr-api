@@ -33,7 +33,9 @@ async def client(tmp_path) -> AsyncIterator[AsyncClient]:
     # scraper's listing metadata, which this DB-seeding path does not carry. The API tests assert
     # counts derived from the 7 eMarketStorage filings.
     for f in sorted(glob.glob("tests/fixtures/*.pdf")):
-        if "oneinfo_" in f:
+        # only the eMarketStorage fixtures parse via the default PDF path; other countries'
+        # fixtures (1Info, AMF-France, …) use their own adapters and are covered by their tests.
+        if any(x in f for x in ("oneinfo_", "amf_fr", "afm_nl", "bafin_")):
             continue
         parsed = parse_filing(f, source_url=f"https://example/{f}")
         async with sessionmaker() as s:

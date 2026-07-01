@@ -42,10 +42,12 @@ ITALIAN_MONTHS = {
 _ACQUISITION = (
     "ACQUIS", "SOTTOSCRIZIONE", "SUBSCRIPTION", "SUBSCRIBE", "PURCHASE", "BUY",
     "VERWERV", "INSCHRIJV", "ERWERB", "KAUF",  # nl: verwerving/inschrijving · de: erwerb/kauf
+    "SOUSCRIP",  # fr: souscription
 )
 _DISPOSAL = (
     "CESSIONE", "VENDITA", "SALE", "SELL", "DISPOSAL",
     "VERVREEMD", "VERKOOP", "VERKAUF", "VERÄUSSER", "CESSION",  # nl: vervreemding/verkoop · de
+    "VENTE",  # fr: vente
 )
 
 

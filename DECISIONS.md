@@ -2,6 +2,27 @@
 
 Append-only. Each entry: context → decision → reasoning. Newest first within a session.
 
+## Session 2026-07-01 (European expansion cont.)
+
+### D-014 — headless browser (Playwright) permitted by the user; France shipped
+**Context:** After DE/UK/ES all proved inaccessible to plain HTTP (robots / WAF / JS-rendered SPAs),
+the user explicitly lifted the brief's "no Selenium/headless" rule to reach UK, Spain and France.
+**Decision:** Added Playwright (Chromium). Used it as a **discovery** tool — to find sites' backing
+JSON APIs — rather than a runtime scraper wherever possible.
+- **France (AMF) — SHIPPED, and needs no headless at runtime.** BDIF is an Angular SPA, but headless
+  revealed its public JSON API (`/back/api/v1/informations?TypesInformation=DD`) + signed PDF path
+  (`/back/api/v1/documents/<path>`), both reachable over plain HTTP. `scraper/amf_fr.py` uses raw
+  httpx: API index → download the cleanly-labelled French declaration PDF → parse. 40/40 success live.
+- **UK (FCA NSM) — still blocked.** The search API sits behind a WAF that returns a decoy
+  ("Thanks for the visit") to non-browser clients and rejects even in-page `fetch` from headless
+  Chromium ("Failed to fetch"). Bypassing it means an anti-bot arms race — not pursued.
+- **Spain (CNMV) — not converged.** Results are JS-rendered and the search is per-issuer /
+  autocomplete-driven, returning a "no data" widget on date-range queries; needs bespoke headless
+  interaction scripting. Deferred.
+**Reasoning:** Prefer discovering a clean HTTP API over driving a browser at runtime (faster,
+deployable, no browser in prod). France fit that perfectly; UK/Spain would require running headless
+in production and fighting anti-bot, which is heavier and fragile.
+
 ## Session 2026-06-30 (European expansion)
 
 ### D-013 — Germany (BaFin) is off-limits: robots.txt `Disallow: /`
