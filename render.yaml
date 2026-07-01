@@ -21,9 +21,9 @@ services:
     dockerfilePath: ./Dockerfile
     plan: free # free web service (cold-starts after ~15 min idle)
     healthCheckPath: /health
-    # retry the migration until Postgres is reachable (free-tier DB can lag the web boot),
-    # then serve. The `until` loop keeps a single cold start from aborting on a transient DB blip.
-    dockerCommand: sh -c "until uv run alembic upgrade head; do echo 'db not ready, retrying in 3s'; sleep 3; done && uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    # Startup logic lives in start.sh (migrate-with-retry, then serve). Inline shell here is
+    # mis-parsed by Render (exit 127), so we call the script file instead.
+    dockerCommand: sh start.sh
     envVars:
       - key: DATABASE_URL
         fromDatabase:
