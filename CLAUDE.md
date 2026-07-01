@@ -14,11 +14,15 @@ mandatory disclosures under **Art. 19 MAR, Regulation (EU) 596/2014** — from p
 **multiple European markets**, normalises them into one schema, stores them in PostgreSQL, and serves
 them via a documented REST API. EU analogue of the SEC EDGAR Form 4 feed.
 
-**Live coverage (2026-07-01): 🇮🇹 Italy · 🇸🇪 Sweden · 🇳🇱 Netherlands · 🇫🇷 France.** Each country is a
-pluggable source adapter normalising to the same `ParsedFiling`; every filing carries a `country`.
-Italy is PDF (the original Allegato 3F parser); the others are structured sources (CSV / XML+HTML /
-JSON-API+PDF). Adding a country = one adapter + register it in `scraper/ingest.py`. See DECISIONS
-D-009..D-014 and PROGRESS.md for the per-country source notes and what's blocked (DE/UK/ES).
+**Live coverage (2026-07-01): 🇮🇹 Italy · 🇸🇪 Sweden · 🇳🇱 Netherlands · 🇫🇷 France · 🇧🇪 Belgium ·
+🇫🇮 Finland · 🇩🇰 Denmark · 🇮🇸 Iceland · 🇪🇪 Estonia · 🇱🇻 Latvia · 🇱🇹 Lithuania — 11 markets.** Each
+country is a pluggable source adapter normalising to the same `ParsedFiling`; every filing carries a
+`country`. Italy is PDF (the original Allegato 3F parser); the others are structured sources (CSV /
+XML+HTML / JSON-API+PDF). The six Nordic/Baltic markets come from a **single** adapter
+(`scraper/nasdaq_nordic.py`) over Nasdaq Nordic's OAM news API — the biggest single unlock, since the
+data is the EU-harmonised Art. 19 template (same Annex as the Allegato 3F). Adding a country = one
+adapter + register it in `scraper/ingest.py`. See DECISIONS D-009..D-015 and PROGRESS.md for the
+per-country source notes and what's blocked (DE/UK/ES).
 
 Scope boundary: **layer 1 only** — data ingestion + API. No trade execution, no brokerage, no
 MiFID-II investment service. We surface public regulatory data; we do not give investment advice.

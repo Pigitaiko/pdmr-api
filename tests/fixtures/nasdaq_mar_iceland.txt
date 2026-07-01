@@ -1,0 +1,37 @@
+Date: 01.07.2026 9:30
+Notification based on Article 19 MAR Regulation
+1. Details of the person discharging managerial responsibilities / person closely associated
+a) Name
+James C. Pelletier
+2. Reason for the notification
+a) Position/status
+EVP & General Counsel
+b) Initial notification/amendment
+Upphafleg tilkynning / Initial notification
+3. Details of the issuer, emission allowance market participant, auction platform, auctioneer or
+auction monitor
+a) Name
+JBT Marel Corporation
+b) Legal Entity Identifier (LEI)
+5493007CT6ATBZ2L6826
+4. Details of the transaction(s): section to be repeated for (i) each type of instrument; (ii) each type
+of transaction; (iii) each date; and (iv) each place where transactions have been conducted
+a) Description of the financial instrument, type of instrument
+Hlutabréf / Shares
+b) Identification code (ISIN)
+US4778391049
+c) Nature of the transaction
+Afhending stjórnanda á hlutum til uppgjörs á sköttum vegna úthlutunar áunninna hlutabréfaréttinda
+(RSU). / Delivery by person discharging managerial responsibilities of shares to settle taxes on vesting
+of restricted stock units (RSUs).
+d) Price(s) and volume
+Price in USD Volume
+145.00 409
+e) Price – aggregated information
+145.00
+f) Aggregated volume
+409
+g) Date of the transaction
+30.06.2026
+h) Place of the transaction
+New York Stock Exchange

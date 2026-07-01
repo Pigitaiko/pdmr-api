@@ -4,6 +4,31 @@ Append-only. Each entry: context → decision → reasoning. Newest first within
 
 ## Session 2026-07-01 (European expansion cont.)
 
+### D-015 — Nasdaq Nordic OAM: six countries from one adapter (Finland → the unlock)
+**Context:** Hunting for more countries, Finland (FIN-FSA) turned out **not** to publish managers'
+transactions itself — it discloses them via "the message storage facility maintained by Nasdaq
+Helsinki." That facility is Nasdaq Nordic's OAM (Officially Appointed Mechanism), a **single public
+JSON news API** (`api.news.eu.nasdaq.com/news/query.action`) that serves the whole bloc: Helsinki,
+Copenhagen, Reykjavík, Tallinn, Riga, Vilnius (+ Stockholm, which we skip — already covered by
+`fi_sweden`). `robots.txt` is 404 (no restriction); filter with `cnscategory=Managers' Transactions`.
+**Decision:** One adapter, `scraper/nasdaq_nordic.py`, registered as a structured source. It:
+- queries the news API (English display), maps `market` → ISO country, **excludes Sweden**;
+- **dedupes bilingual twins** — the API returns a separate item per language with distinct
+  `disclosureId`s and localized company names (`Wärtsilä Corporation` vs `Wärtsilä Oyj Abp`), so we
+  key on (releaseTime, market, person-in-headline), preferring the English rendering;
+- carries the Art. 19 data two ways and handles both: a **PDF attachment** (the EU-harmonised
+  2016/523 template — same Annex as Italy's Allegato 3F; anchored on the numbered section labels,
+  language-independent for ISIN/LEI/date) **or** an **inline colon-labelled body** (Nasdaq's own
+  format, mainly Helsinki). We prefer the inline body when present (cleaner than some scanned PDFs);
+- falls back to a `partial` filing from listing metadata (issuer + country + ISIN + link) when the
+  filing is in a local language we don't anchor (Danish/Lithuanian PDFs).
+**Result (live):** ~50 filings/pull across FI/DK/IS/LT (EE/LV appear when present), **~52% full
+`success`** with person + ISIN + price/volume, the rest useful partials. 10 offline tests over real
+fixtures. This is the single biggest coverage jump: **5 → 11 markets** from one integration.
+**Reasoning:** The OAM pattern (exchange-run disclosure hub) is how the Nordics/Baltics centralise
+Art. 19; one API beats six national registers. ESAP would eventually do this pan-EU, but not until
+2027–2028, so the Nasdaq OAM is the accessible shortcut today.
+
 ### D-014 — headless browser (Playwright) permitted by the user; France shipped
 **Context:** After DE/UK/ES all proved inaccessible to plain HTTP (robots / WAF / JS-rendered SPAs),
 the user explicitly lifted the brief's "no Selenium/headless" rule to reach UK, Spain and France.

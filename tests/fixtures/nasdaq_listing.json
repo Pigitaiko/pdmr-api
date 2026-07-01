@@ -1,0 +1,78 @@
+{
+ "results": {
+  "item": [
+   {
+    "disclosureId": 1451003,
+    "categoryId": 66,
+    "headline": "JBT Marel Corporation: Managers' transactions",
+    "cnsCategory": "Managers' Transactions",
+    "market": "Main Market, Iceland",
+    "company": "JBT Marel Corporation",
+    "messageUrl": "https://view.news.eu.nasdaq.com/view?id=b59da74ae41f1ac78d4da985fefd8c946&lang=en&src=listed",
+    "releaseTime": "2026-07-01 18:40:00",
+    "published": "2026-07-01 18:40:00",
+    "language": "en"
+   },
+   {
+    "disclosureId": 1450994,
+    "categoryId": 66,
+    "headline": "Wärtsilä Corporation - Manager's transaction: Holm, Roger",
+    "cnsCategory": "Managers' Transactions",
+    "market": "Main Market, Helsinki",
+    "company": "Wärtsilä",
+    "messageUrl": "https://view.news.eu.nasdaq.com/view?id=b825148f23787d8b7fc9b1ad657f79e93&lang=en&src=listed",
+    "releaseTime": "2026-07-01 17:05:00",
+    "published": "2026-07-01 17:05:00",
+    "language": "en"
+   },
+   {
+    "disclosureId": 1450993,
+    "categoryId": 66,
+    "headline": "Wärtsilä Oyj Abp - Johdon liiketoimet: Holm, Roger",
+    "cnsCategory": "Managers' Transactions",
+    "market": "Main Market, Helsinki",
+    "company": "Wärtsilä",
+    "messageUrl": "https://view.news.eu.nasdaq.com/view?id=bd8d2cf2ceb1ada005c482c85127c6396&lang=fi&src=listed",
+    "releaseTime": "2026-07-01 17:05:00",
+    "published": "2026-07-01 17:05:00",
+    "language": "fi"
+   },
+   {
+    "disclosureId": 1450991,
+    "categoryId": 66,
+    "headline": "Wärtsilä Oyj Abp - Johdon liiketoimet: Berends, Arjen",
+    "cnsCategory": "Managers' Transactions",
+    "market": "Main Market, Helsinki",
+    "company": "Wärtsilä",
+    "messageUrl": "https://view.news.eu.nasdaq.com/view?id=b0f4e0a70f34a190cef1416910a4149c1&lang=fi&src=listed",
+    "releaseTime": "2026-07-01 17:00:00",
+    "published": "2026-07-01 17:00:00",
+    "language": "fi"
+   },
+   {
+    "disclosureId": 1450990,
+    "categoryId": 66,
+    "headline": "Wärtsilä Corporation - Manager's transaction: Berends, Arjen",
+    "cnsCategory": "Managers' Transactions",
+    "market": "Main Market, Helsinki",
+    "company": "Wärtsilä",
+    "messageUrl": "https://view.news.eu.nasdaq.com/view?id=b25be5f58ae68ef00a195c4f5bc1326d5&lang=en&src=listed",
+    "releaseTime": "2026-07-01 17:00:00",
+    "published": "2026-07-01 17:00:00",
+    "language": "en"
+   },
+   {
+    "disclosureId": 1450945,
+    "categoryId": 66,
+    "headline": "Danske Bank A/S, transactions by persons discharging managerial responsibilities",
+    "cnsCategory": "Managers' Transactions",
+    "market": "Main Market, Copenhagen",
+    "company": "Danske Bank A/S",
+    "messageUrl": "https://view.news.eu.nasdaq.com/view?id=b3d1d23a6863d69b208b3d177a50be0cc&lang=en&src=listed",
+    "releaseTime": "2026-07-01 15:32:09",
+    "published": "2026-07-01 15:32:09",
+    "language": "en"
+   }
+  ]
+ }
+}

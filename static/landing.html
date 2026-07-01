@@ -170,7 +170,7 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <span class="eyebrow"><span class="live"></span> LIVE · 🇮🇹 🇸🇪 🇳🇱 🇫🇷 🇧🇪 · ART. 19 MAR</span>
+      <span class="eyebrow"><span class="live"></span> LIVE · 🇮🇹 🇸🇪 🇳🇱 🇫🇷 🇧🇪 🇫🇮 🇩🇰 🇮🇸 🇪🇪 🇱🇻 🇱🇹 · ART. 19 MAR</span>
       <h1>See what <em>insiders</em> are buying — across Europe.</h1>
       <p class="lede">Every director and executive at a listed European company has to disclose when
         they trade their own stock. We aggregate it the moment it's filed — one API, every market.</p>
@@ -181,7 +181,7 @@
       <div class="trust">
         <div><div class="n" id="t-filings">2,000+</div><div class="l">filings tracked</div></div>
         <div><div class="n" id="t-tx">3,000+</div><div class="l">transactions</div></div>
-        <div><div class="n">5</div><div class="l">countries</div></div>
+        <div><div class="n">11</div><div class="l">countries</div></div>
       </div>
     </div>
 
@@ -216,6 +216,12 @@
         <button class="fpill" data-c="NL">🇳🇱 Netherlands</button>
         <button class="fpill" data-c="FR">🇫🇷 France</button>
         <button class="fpill" data-c="BE">🇧🇪 Belgium</button>
+        <button class="fpill" data-c="FI">🇫🇮 Finland</button>
+        <button class="fpill" data-c="DK">🇩🇰 Denmark</button>
+        <button class="fpill" data-c="IS">🇮🇸 Iceland</button>
+        <button class="fpill" data-c="EE">🇪🇪 Estonia</button>
+        <button class="fpill" data-c="LV">🇱🇻 Latvia</button>
+        <button class="fpill" data-c="LT">🇱🇹 Lithuania</button>
       </div>
     </div>
     <div class="cards" id="cards">
@@ -281,7 +287,7 @@
 <section id="coverage">
   <div class="wrap">
     <div class="klabel">Coverage</div>
-    <h2>Five markets. One normalized feed.</h2>
+    <h2>Eleven markets. One normalized feed.</h2>
     <p class="sub">Every country publishes the same Art. 19 disclosure in a different way — PDF, CSV,
       XML, JSON. We do the integration once and hand you one clean schema.</p>
     <div class="cov" style="grid-template-columns:repeat(2,1fr)">
@@ -295,6 +301,9 @@
         <p style="color:var(--muted);margin:8px 0 0">AMF BDIF — the déclarations des dirigeants via its JSON API + PDFs.</p></div>
       <div class="step"><h3>🇧🇪 Belgium <span class="pos mono" style="font-size:13px">● live</span></h3>
         <p style="color:var(--muted);margin:8px 0 0">FSMA managers'-transactions register — server-rendered, fully labelled.</p></div>
+      <div class="step"><h3>🇫🇮 🇩🇰 🇮🇸 🇪🇪 🇱🇻 🇱🇹 Nordics &amp; Baltics <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">Nasdaq Nordic's OAM — one JSON news API covering Finland, Denmark, Iceland,
+          Estonia, Latvia &amp; Lithuania; each disclosure's harmonized Art. 19 template parsed.</p></div>
     </div>
     <div class="legal">
       <h3>What this is — and isn't</h3>
@@ -327,7 +336,8 @@
   const fEur=n=>'€'+Math.round(Number(n)||0).toLocaleString('en-US');
   const num=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
   const ttype=t=>t==='A'?'BUY':t==='D'?'SELL':'OTHER';
-  const FLAG={IT:'🇮🇹',SE:'🇸🇪',NL:'🇳🇱',FR:'🇫🇷',BE:'🇧🇪',DE:'🇩🇪'};
+  const FLAG={IT:'🇮🇹',SE:'🇸🇪',NL:'🇳🇱',FR:'🇫🇷',BE:'🇧🇪',DE:'🇩🇪',
+              FI:'🇫🇮',DK:'🇩🇰',IS:'🇮🇸',EE:'🇪🇪',LV:'🇱🇻',LT:'🇱🇹'};
   const flag=c=>FLAG[c]||'🇪🇺';
 
   let SIGNALS=[];              // cached cross-country buys (sorted by value)
