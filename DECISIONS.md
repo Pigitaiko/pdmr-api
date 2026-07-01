@@ -125,11 +125,14 @@ blocked, switch and log it."
 **Decision:** Use `uv` (installed 0.11.22; pins CPython 3.11.15). **Reasoning:** Env had only Python
 3.9 and no poetry; uv installs a modern interpreter + fast locking with one tool. Noted per brief.
 
-### D-004 — User-Agent contact placeholder, real contact only in local .env
-**Decision:** Committed default `USER_AGENT=PDMR-API-bot/0.1 (+contact@pdmr-api.example)` in
-`.env.example`; the operator puts a real reachable address in gitignored `.env`.
-**Reasoning:** "Respect the sources" wants a real contact, but "never commit secrets / personal data"
-wins for committed files. Keeps personal email out of git history.
+### D-004 — User-Agent contact = the public repo URL (reachable, not personal)
+**Decision:** The committed default `USER_AGENT` (in `config.py`, `.env.example`, and the deployed
+`render.yaml`) is `PDMR-API-bot/0.1 (+https://github.com/Pigitaiko/pdmr-api)`. Originally a
+non-routable `contact@pdmr-api.example` placeholder; the pre-deploy audit flagged that as unreachable
+(breaks the source-politeness policy for a public deploy), so it was switched to the repo URL.
+**Reasoning:** "Respect the sources" wants a reachable contact; a public GitHub URL is reachable (via
+issues) while keeping a personal email out of git history and out of every request header. An operator
+can still override with a personal address in gitignored `.env` if they prefer.
 
 ### D-005 — Filing identity = `Comunicato n.` (`NNNN-NN-YYYY`)
 **Decision:** Idempotency/dedup key is the eMarketStorage "Comunicato n." id (e.g. `0088-10-2026`),

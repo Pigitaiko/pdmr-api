@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
     log_level: str = "INFO"
-    user_agent: str = "PDMR-API-bot/0.1 (+contact@pdmr-api.example)"
+    user_agent: str = "PDMR-API-bot/0.1 (+https://github.com/Pigitaiko/pdmr-api)"
 
     # politeness / scraping
     request_delay_seconds: float = 1.0

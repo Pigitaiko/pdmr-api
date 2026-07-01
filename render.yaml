@@ -30,7 +30,7 @@ services:
           name: pdmr-db
           property: connectionString
       - key: USER_AGENT
-        value: "PDMR-API-bot/0.1 (+contact@pdmr-api.example)"
+        value: "PDMR-API-bot/0.1 (+https://github.com/Pigitaiko/pdmr-api)"
       - key: LOG_LEVEL
         value: INFO
       - key: BOOTSTRAP_SCRAPE
