@@ -51,6 +51,14 @@ _ACQUISITION = (
     "ERWERB",
     "KAUF",  # nl: verwerving/inschrijving · de: erwerb/kauf
     "SOUSCRIP",  # fr: souscription
+    "KJØP",
+    "KJOEP",
+    "TEGNING",  # no: kjøp/tegning
+    "KÖP",
+    "KOEP",
+    "TECKNING",  # sv: köp/teckning
+    "KØB",  # da: køb
+    "OSTO",  # fi: osto
 )
 _DISPOSAL = (
     "CESSIONE",
@@ -64,6 +72,10 @@ _DISPOSAL = (
     "VERÄUSSER",
     "CESSION",  # nl: vervreemding/verkoop · de
     "VENTE",  # fr: vente
+    "SALG",  # no/da: salg
+    "SÄLJ",
+    "FÖRSÄLJ",  # sv: sälj/försäljning
+    "MYYNTI",  # fi: myynti
 )
 
 

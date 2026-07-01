@@ -4,6 +4,31 @@ Append-only. Each entry: context → decision → reasoning. Newest first within
 
 ## Session 2026-07-01 (European expansion cont.)
 
+### D-016 — Norway (Oslo Børs NewsWeb OAM): KRT-1500 form + harmonised template
+**Context:** After the Nasdaq OAM unlock, Norway is the other Nordic OAM — Oslo Børs runs its *own*
+NewsWeb (not on Nasdaq's). It exposes a clean public JSON API (`api3.oslo.oslobors.no/v1/newsreader`);
+category **1102 = MANAGERS' TRANSACTION**; `robots.txt` is the SPA (no restriction). Detail messages
+attach the Art. 19 data as a PDF.
+**Decision:** `scraper/oslo_bors_no.py`, a structured source. list(cat=1102) → per message, download
+each PDF attachment and parse by type:
+- **KRT-1500** — Finanstilsynet's system-generated managers'-transaction form. Because it's
+  government-generated its numbered Norwegian labels (`1.7.1 Fullt navn`, `2.2.2 Foretaksnavn`,
+  `2.3.2 ISIN-kode`, `2.4.1 Transaksjonstype`, `2.8.1/2.8.2` price/volume, `2.9.1` date,
+  `2.10.1 Handelsplass`) are identical across issuers → parses reliably. A trade via an associated
+  legal entity (`1.6.2`) sets `is_legal_person` while keeping the PDMR as the person.
+- **English EU-harmonised template** — some issuers attach this instead; we **reuse**
+  `nasdaq_nordic.parse_mar_text` for it (same 2016/523 Annex).
+- **body-only / custom PDFs** (SpareBank-style free-text prose, LTIP multi-person grants, takeover
+  acceptances) → `partial` from the listing (issuer + country + title + link). Prose varies too much
+  per issuer to extract reliably; not worth the fragility.
+- Added Nordic transaction verbs to the shared parser (`KJØP/SALG/TEGNING`, sv/da/fi equivalents),
+  which also lifts Nasdaq DK/SE nature-mapping.
+**Result:** live batch parses form-based filings to full `success` (person + ISIN + NOK price/volume);
+all filings covered at least as partials. 4 offline tests over a real KRT-1500 fixture. **11 → 12
+markets.**
+**Reasoning:** Same OAM pattern as Nasdaq, one national exchange; the KRT-1500 being a fixed
+government form makes it the most reliable single template we parse.
+
 ### D-015 — Nasdaq Nordic OAM: six countries from one adapter (Finland → the unlock)
 **Context:** Hunting for more countries, Finland (FIN-FSA) turned out **not** to publish managers'
 transactions itself — it discloses them via "the message storage facility maintained by Nasdaq

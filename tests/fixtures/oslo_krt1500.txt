@@ -1,0 +1,57 @@
+Finanstilsynet
+KRT-1500 Skjema for melding om transaksjoner utført av personer med ledelsesansvar
+(«primærinnsidere») og deres nærstående
+Dato sendt: 01.07.2026 / 16:56
+Mottaker: Finanstilsynet
+Referansenummer: 70a4b2bb2ce7
+1 Om rapporteringen
+1.1 Rapporterer du på vegne av deg selv eller andre?
+På vegne av andre
+1.2 Informasjon om rapportør
+1.2.1 Rapportøres Navn
+SKASET NILS PETTER
+1.2.2 Rapportøres Foretaksnavn
+NORDIC FINANCIALS ASA
+1.3 Informasjon om primærinnsider / nærstående
+Dersom transaksjonen er gjennomført av primærinnsiders nærstående foretak, skal du krysse av for primærinnsiders nærstående foretak – ikke for
+primærinnsider. Da får du mulighet til å registrere informasjon om primærinnsideren og det nærstående foretaket til primærinnsideren.
+1.3.1 Jeg rapporterer som / på vegne av:
+Nærstående foretak
+1.6 Nærstående foretak
+1.6.1 Norsk eller utenlandsk foretak
+Norsk
+1.6.1.1 Organisasjonsnummer (til det nærstående foretaket)
+990 202 818
+1.6.2 Foretaksnavn (til det nærstående foretaket)
+SELACO AS
+1.6.4 LEI-nummer (til det nærstående foretaket)
+Du har ikke lagt inn informasjon her
+1.7 Om primærinnsider
+1.7.1 Fullt navn
+Svend Egil LArsen
+1.7.2 Stilling/Rolle
+CIO
+2 Om meldingen
+2.1 Er dette en ny melding eller korrigering av tidligere meldt transaksjon?
+Ny melding
+2.2 Informasjon om utstederen eller deltakeren på utslippskvotemarkedet
+2.2.1 Lei-kode (til utsteder eller deltaker på utslippskvotemarked)
+5967007LIEEXZXGCJS95
+2.2.2 Foretaksnavn (til utsteder eller deltaker på utslippskvotemarked)
+Nordic financials ASA
+2.3 Den meldepliktige transaksjonen
+Beskrivelse av det finansielle instrumentet/type finansielt instrument
+2.3.1 Instrument : Aksje
+2.3.2 ISIN-kode : NO0013683409
+2.3.2.1 Utstedernavn : Nordic Financials ASA
+2.4.1 Transaksjonstype : Kjøp
+2.5.1 Er transaksjonen knyttet til utøvelse av et aksjeopsjonsprogram? : Nei
+2.6.1 Valuta : NOK
+2.8.1 Gjennomsnittlig pris per enhet : 1,7188
+2.8.2 Aggregert volum : 29 000
+2.8.3 Total sum : 49 845,2
+2.9.1 Angi dato : 01.07.2026
+2.10.1 Handelsplass : XOAS - Euronext Expand Oslo
+Dersom det er foretatt mer enn én transaksjon av samme type, finansielle instrument, dag og handelsplass, så kan pris og volum angis for hver transaksjon.
+2.11 Kommentar
+Du har ikke lagt inn informasjon her

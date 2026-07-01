@@ -28,6 +28,7 @@ from scraper.fsma_be import fetch_filings as belgium_fetch
 from scraper.http import PoliteClient
 from scraper.nasdaq_nordic import fetch_filings as nasdaq_fetch
 from scraper.oneinfo import fetch_internal_dealing as oneinfo_fetch
+from scraper.oslo_bors_no import fetch_filings as norway_fetch
 from scraper.parser import parse_filing
 from scraper.store import upsert_filing
 
@@ -133,6 +134,7 @@ _STRUCTURED: dict[str, tuple[str, Callable[..., Awaitable[list]]]] = {
     "amf_fr": ("https://bdif.amf-france.org", france_fetch),
     "fsma_be": ("https://www.fsma.be", belgium_fetch),
     "nasdaq_nordic": ("https://api.news.eu.nasdaq.com", nasdaq_fetch),
+    "oslo_bors_no": ("https://api3.oslo.oslobors.no", norway_fetch),
 }
 
 _ALL_SOURCES = (*_SOURCES, *_STRUCTURED)
