@@ -197,6 +197,7 @@ async def feed(
 async def signals(
     session: AsyncSession = SessionDep,
     min_value: Decimal = Query(Decimal("50000"), ge=0),
+    country: str | None = Query(None, description="ISO-2 country code, e.g. IT, SE"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> TransactionListOut:
@@ -208,6 +209,8 @@ async def signals(
         & (Transaction.signal_value >= min_value)
         & (Filing.role_code.in_(roles))
     )
+    if country:
+        cond = cond & (Filing.country == country.upper())
     count_q = select(func.count()).select_from(Transaction).join(Transaction.filing).where(cond)
     total = (await session.execute(count_q)).scalar_one()
     rows = (

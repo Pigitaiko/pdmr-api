@@ -130,6 +130,14 @@
   .ep .m{color:var(--green-ink);font-weight:800;margin-right:8px}
 
   .cov{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
+  a.step{display:block;position:relative;transition:.15s}
+  a.step:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(13,20,17,.4);border-color:var(--green)}
+  a.step .go{position:absolute;top:20px;right:22px;color:var(--green-ink);font-weight:800;opacity:0;transition:.15s}
+  a.step:hover .go{opacity:1}
+  .markets{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .mchip{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);background:#fff;
+    border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer;transition:.12s}
+  .mchip:hover{border-color:var(--green);color:var(--green-ink);transform:translateY(-1px)}
   .legal{border:1px solid var(--line);border-radius:18px;padding:22px 24px;background:#fff;margin-top:22px}
   .legal h3{margin:0 0 8px;font-size:16px} .legal p{margin:0;color:var(--muted);font-size:14.5px}
 
@@ -290,24 +298,46 @@
     <div class="klabel">Coverage</div>
     <h2>Twelve markets. One normalized feed.</h2>
     <p class="sub">Every country publishes the same Art. 19 disclosure in a different way — PDF, CSV,
-      XML, JSON. We do the integration once and hand you one clean schema.</p>
+      XML, JSON. We do the integration once and hand you one clean schema. <b>Pick a market to explore
+      it live →</b></p>
+    <!-- every market is clickable: opens the dashboard filtered to that country -->
+    <div class="markets" id="markets">
+      <a class="mchip" href="/dashboard?country=IT">🇮🇹 Italy</a>
+      <a class="mchip" href="/dashboard?country=SE">🇸🇪 Sweden</a>
+      <a class="mchip" href="/dashboard?country=NL">🇳🇱 Netherlands</a>
+      <a class="mchip" href="/dashboard?country=FR">🇫🇷 France</a>
+      <a class="mchip" href="/dashboard?country=BE">🇧🇪 Belgium</a>
+      <a class="mchip" href="/dashboard?country=FI">🇫🇮 Finland</a>
+      <a class="mchip" href="/dashboard?country=DK">🇩🇰 Denmark</a>
+      <a class="mchip" href="/dashboard?country=IS">🇮🇸 Iceland</a>
+      <a class="mchip" href="/dashboard?country=EE">🇪🇪 Estonia</a>
+      <a class="mchip" href="/dashboard?country=LV">🇱🇻 Latvia</a>
+      <a class="mchip" href="/dashboard?country=LT">🇱🇹 Lithuania</a>
+      <a class="mchip" href="/dashboard?country=NO">🇳🇴 Norway</a>
+    </div>
     <div class="cov" style="grid-template-columns:repeat(2,1fr)">
-      <div class="step"><h3>🇮🇹 Italy <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">eMarketStorage + 1Info — the two authorized storage systems (PDF filings).</p></div>
-      <div class="step"><h3>🇸🇪 Sweden <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">Finansinspektionen's open PDMR register — structured CSV, prices in SEK.</p></div>
-      <div class="step"><h3>🇳🇱 Netherlands <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">AFM managers'-transactions register — XML index + per-record detail.</p></div>
-      <div class="step"><h3>🇫🇷 France <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">AMF BDIF — the déclarations des dirigeants via its JSON API + PDFs.</p></div>
-      <div class="step"><h3>🇧🇪 Belgium <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">FSMA managers'-transactions register — server-rendered, fully labelled.</p></div>
-      <div class="step"><h3>🇫🇮 🇩🇰 🇮🇸 🇪🇪 🇱🇻 🇱🇹 Nordics &amp; Baltics <span class="pos mono" style="font-size:13px">● live</span></h3>
-        <p style="color:var(--muted);margin:8px 0 0">Nasdaq Nordic's OAM — one JSON news API covering Finland, Denmark, Iceland,
-          Estonia, Latvia &amp; Lithuania; each disclosure's harmonized Art. 19 template parsed.</p></div>
-      <div class="step"><h3>🇳🇴 Norway <span class="pos mono" style="font-size:13px">● live</span></h3>
+      <a class="step" href="/dashboard?country=IT"><span class="go">explore →</span><h3>🇮🇹 Italy <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">eMarketStorage + 1Info — the two authorized storage systems (PDF filings).</p></a>
+      <a class="step" href="/dashboard?country=SE"><span class="go">explore →</span><h3>🇸🇪 Sweden <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">Finansinspektionen's open PDMR register — structured CSV, prices in SEK.</p></a>
+      <a class="step" href="/dashboard?country=NL"><span class="go">explore →</span><h3>🇳🇱 Netherlands <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">AFM managers'-transactions register — XML index + per-record detail.</p></a>
+      <a class="step" href="/dashboard?country=FR"><span class="go">explore →</span><h3>🇫🇷 France <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">AMF BDIF — the déclarations des dirigeants via its JSON API + PDFs.</p></a>
+      <a class="step" href="/dashboard?country=BE"><span class="go">explore →</span><h3>🇧🇪 Belgium <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">FSMA managers'-transactions register — server-rendered, fully labelled.</p></a>
+      <a class="step" href="/dashboard?country=NO"><span class="go">explore →</span><h3>🇳🇴 Norway <span class="pos mono" style="font-size:13px">● live</span></h3>
         <p style="color:var(--muted);margin:8px 0 0">Oslo Børs NewsWeb OAM — its JSON API + Finanstilsynet's
-          standard KRT-1500 managers'-transaction form (prices in NOK).</p></div>
+          standard KRT-1500 managers'-transaction form (prices in NOK).</p></a>
+      <div class="step" style="grid-column:1/-1"><h3>🇫🇮 🇩🇰 🇮🇸 🇪🇪 🇱🇻 🇱🇹 Nordics &amp; Baltics <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">Nasdaq Nordic's OAM — one JSON news API covering the whole bloc; each disclosure's
+          harmonized Art. 19 template parsed. Explore:
+          <a class="pos" href="/dashboard?country=FI">Finland</a> ·
+          <a class="pos" href="/dashboard?country=DK">Denmark</a> ·
+          <a class="pos" href="/dashboard?country=IS">Iceland</a> ·
+          <a class="pos" href="/dashboard?country=EE">Estonia</a> ·
+          <a class="pos" href="/dashboard?country=LV">Latvia</a> ·
+          <a class="pos" href="/dashboard?country=LT">Lithuania</a>.</p></div>
     </div>
     <div class="legal">
       <h3>What this is — and isn't</h3>

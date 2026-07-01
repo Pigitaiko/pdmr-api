@@ -1,92 +1,262 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PDMR · Insider Transactions</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body { font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 2rem; max-width: 1100px; }
-    h1 { margin: 0 0 .25rem; }
-    .sub { opacity: .7; margin: 0 0 1.5rem; }
-    .controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    button { padding: .4rem .8rem; cursor: pointer; border-radius: 6px; border: 1px solid #8888; background: transparent; }
-    button.active { background: #2563eb; color: #fff; border-color: #2563eb; }
-    table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
-    th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid #8883; }
-    th { font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; opacity: .7; }
-    td.num { text-align: right; }
-    .A { color: #16a34a; font-weight: 600; }
-    .D { color: #dc2626; font-weight: 600; }
-    .O { opacity: .6; }
-    .empty { padding: 2rem; opacity: .6; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PDMR · Dashboard</title>
+<meta name="description" content="Live European insider-dealing transactions (Art. 19 MAR), normalized across 12 markets. Public regulatory data — not investment advice." />
+<style>
+  :root{
+    --ink:#0d1411; --paper:#ffffff; --muted:#5f6b66; --line:#e9ecea;
+    --mint:#f1f8f4; --mint2:#e7f4ec;
+    --green:#06c167; --green-d:#069e54; --green-ink:#067a44;
+    --red:#e0524d;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);
+    -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+  .mono{font-family:var(--mono)}
+  .pos{color:var(--green-ink);font-weight:800}
+
+  /* nav (identical to landing) */
+  header.bar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.85);
+    backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand .mark{width:26px;height:26px;border-radius:9px;background:var(--green);
+    display:grid;place-items:center;color:#fff;font-weight:900;font-size:15px;
+    box-shadow:0 4px 12px rgba(6,193,103,.35)}
+  nav.links{display:flex;gap:26px;align-items:center;font-size:15px;color:var(--muted)}
+  nav.links a:hover{color:var(--ink)}
+  .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:700;
+    font-size:15px;padding:11px 20px;cursor:pointer;border:1.5px solid transparent;transition:.15s}
+  .pill.solid{background:var(--green);color:#fff;box-shadow:0 6px 18px rgba(6,193,103,.32)}
+  .pill.solid:hover{background:var(--green-d);transform:translateY(-1px)}
+  .pill.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .pill.ghost:hover{border-color:var(--ink)}
+
+  /* header block */
+  .top{padding:40px 0 8px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--mint2);color:var(--green-ink);
+    font-weight:800;font-size:12.5px;letter-spacing:.04em;padding:7px 13px;border-radius:999px}
+  .eyebrow .live{width:8px;height:8px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 0 0 rgba(6,193,103,.6);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(6,193,103,.5)}70%{box-shadow:0 0 0 9px rgba(6,193,103,0)}100%{box-shadow:0 0 0 0 rgba(6,193,103,0)}}
+  h1{font-size:clamp(30px,4vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:850;margin:16px 0 0}
+  .sub{color:var(--muted);max-width:70ch;margin:10px 0 0;font-size:16.5px}
+  .stats{display:flex;gap:28px;flex-wrap:wrap;margin:22px 0 0}
+  .stats .n{font-size:24px;font-weight:850;letter-spacing:-.02em}
+  .stats .l{font-size:13px;color:var(--muted);margin-top:1px}
+
+  /* filters */
+  .controls{position:sticky;top:66px;z-index:10;background:var(--paper);padding:18px 0 14px;margin-top:18px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .filters + .filters{margin-top:10px}
+  .fpill{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;
+    font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;transition:.12s}
+  .fpill:hover{border-color:var(--ink);color:var(--ink)}
+  .fpill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .fpill.mode.on{background:var(--green);border-color:var(--green);color:#fff}
+
+  /* table */
+  .tablewrap{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;margin:8px 0 60px}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  thead th{text-align:left;padding:14px 16px;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--muted);font-weight:800;background:var(--mint);border-bottom:1px solid var(--line);white-space:nowrap}
+  tbody td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--mint)}
+  td.num{text-align:right;font-family:var(--mono)}
+  .iss{font-weight:750;letter-spacing:-.01em}
+  .flag{margin-right:7px}
+  .who{color:var(--muted);font-size:13px}
+  .chip{font-family:var(--mono);font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .chip.A{color:var(--green-ink);background:var(--mint2)}
+  .chip.D{color:var(--red);background:#fdeceb}
+  .chip.O{color:var(--muted);background:#f0f2f1}
+  .rolechip{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .val{font-weight:850}
+  .cur{color:var(--muted);font-weight:600;font-size:11px;margin-left:3px}
+  .empty{padding:56px 24px;text-align:center;color:var(--muted)}
+  .empty .big{font-size:17px;font-weight:750;color:var(--ink)}
+  .legal{border:1px solid var(--line);border-radius:16px;padding:16px 20px;background:var(--mint);
+    color:var(--muted);font-size:13.5px;margin:0 0 60px}
+
+  @media(max-width:820px){
+    nav.links a:not(.pill){display:none}
+    .hide-sm{display:none}
+    .controls{position:static}
+  }
+</style>
 </head>
 <body>
-  <h1>PDMR — Italian Insider Transactions</h1>
-  <p class="sub">Public Art. 19 MAR filings, parsed from the Allegato 3F form. Not investment advice.</p>
 
-  <div class="controls">
-    <button data-mode="signals" class="active">C-suite buy signals</button>
-    <button data-mode="recent">All recent</button>
-    <button data-mode="buys">Buys (A)</button>
-    <button data-mode="sells">Sells (D)</button>
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="mark">P</span> PDMR</a>
+    <nav class="links">
+      <a href="/#signals">Signals</a>
+      <a href="/#how">How it works</a>
+      <a href="/#api">API</a>
+      <a class="pill ghost" href="/">Home</a>
+      <a class="pill solid" href="/docs">Get the API</a>
+    </nav>
   </div>
+</header>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Date</th><th>Issuer</th><th>Insider</th><th>Type</th><th>Role</th>
-        <th class="num">Price</th><th class="num">Volume</th><th class="num">Value (€)</th><th>Venue</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
-  <div id="empty" class="empty" hidden>No transactions found.</div>
+<div class="top">
+  <div class="wrap">
+    <span class="eyebrow"><span class="live"></span> LIVE · ART. 19 MAR</span>
+    <h1 id="title">Insider transactions</h1>
+    <p class="sub">Managers' dealings across twelve European markets — normalized into one feed.
+      Public regulatory data. Not investment advice.</p>
+    <div class="stats">
+      <div><div class="n" id="s-total">—</div><div class="l">transactions shown</div></div>
+      <div><div class="n" id="s-country">12</div><div class="l">markets</div></div>
+      <div><div class="n pos" id="s-buys">—</div><div class="l">buys in view</div></div>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const ENDPOINTS = {
-      signals: "/v1/signals?min_value=10000&limit=100",
-      recent:  "/v1/transactions?limit=100",
-      buys:    "/v1/transactions?type=A&limit=100",
-      sells:   "/v1/transactions?type=D&limit=100",
-    };
-    const fmt = (n) => n == null ? "—" : Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
-    const FLAG = {IT:"🇮🇹",SE:"🇸🇪",NL:"🇳🇱",FR:"🇫🇷",BE:"🇧🇪",DE:"🇩🇪",
-                  FI:"🇫🇮",DK:"🇩🇰",IS:"🇮🇸",EE:"🇪🇪",LV:"🇱🇻",LT:"🇱🇹",NO:"🇳🇴"};
+<div class="controls">
+  <div class="wrap">
+    <div class="filters" id="modes">
+      <button class="fpill mode on" data-mode="signals">C-suite buy signals</button>
+      <button class="fpill mode" data-mode="recent">All recent</button>
+      <button class="fpill mode" data-mode="buys">Buys</button>
+      <button class="fpill mode" data-mode="sells">Sells</button>
+    </div>
+    <div class="filters" id="countries">
+      <button class="fpill on" data-c="">🌍 All markets</button>
+      <button class="fpill" data-c="IT">🇮🇹 Italy</button>
+      <button class="fpill" data-c="SE">🇸🇪 Sweden</button>
+      <button class="fpill" data-c="NL">🇳🇱 Netherlands</button>
+      <button class="fpill" data-c="FR">🇫🇷 France</button>
+      <button class="fpill" data-c="BE">🇧🇪 Belgium</button>
+      <button class="fpill" data-c="FI">🇫🇮 Finland</button>
+      <button class="fpill" data-c="DK">🇩🇰 Denmark</button>
+      <button class="fpill" data-c="IS">🇮🇸 Iceland</button>
+      <button class="fpill" data-c="EE">🇪🇪 Estonia</button>
+      <button class="fpill" data-c="LV">🇱🇻 Latvia</button>
+      <button class="fpill" data-c="LT">🇱🇹 Lithuania</button>
+      <button class="fpill" data-c="NO">🇳🇴 Norway</button>
+    </div>
+  </div>
+</div>
 
-    async function load(mode) {
-      const res = await fetch(ENDPOINTS[mode]);
-      const body = await res.json();
-      const rows = document.getElementById("rows");
-      const empty = document.getElementById("empty");
-      rows.innerHTML = "";
-      const data = body.data || [];
-      empty.hidden = data.length > 0;
-      for (const t of data) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${t.transaction_date || "—"}</td>
-          <td>${FLAG[t.country] || "🇪🇺"} ${t.issuer_name || ""}</td>
-          <td>${t.person_name || "—"}</td>
-          <td class="${t.transaction_type}">${t.transaction_type}</td>
-          <td>${t.role_code || "—"}</td>
-          <td class="num">${fmt(t.price)}</td>
-          <td class="num">${fmt(t.volume)}</td>
-          <td class="num">${fmt(t.signal_value)}</td>
-          <td>${t.venue || "—"}</td>`;
-        rows.appendChild(tr);
-      }
+<div class="wrap">
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Issuer</th><th class="hide-sm">Insider</th><th>Type</th>
+          <th class="hide-sm">Role</th><th class="num hide-sm">Price</th>
+          <th class="num hide-sm">Volume</th><th class="num">Value</th><th class="hide-sm">Venue</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div id="empty" class="empty" hidden>
+      <div class="big">No transactions in this view yet.</div>
+      <div style="margin-top:6px">Data populates on first boot and refreshes on the market-hours scrape. Try “All recent”, or another market.</div>
+    </div>
+  </div>
+  <div class="legal">Public Art. 19 MAR (EU 596/2014) managers'-transaction disclosures, parsed from
+    each market's official source. Values are price × volume in the transaction's own currency.
+    Not investment advice; not a brokerage or MiFID-II service.</div>
+</div>
+
+<script>
+  const FLAG={IT:'🇮🇹',SE:'🇸🇪',NL:'🇳🇱',FR:'🇫🇷',BE:'🇧🇪',DE:'🇩🇪',
+              FI:'🇫🇮',DK:'🇩🇰',IS:'🇮🇸',EE:'🇪🇪',LV:'🇱🇻',LT:'🇱🇹',NO:'🇳🇴'};
+  const flag=c=>FLAG[c]||'🇪🇺';
+  const CURSYM={EUR:'€',USD:'$',GBP:'£',SEK:'kr',NOK:'kr',DKK:'kr',ISK:'kr',CHF:'CHF',PLN:'zł'};
+  const num=n=>n==null?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:4});
+  const val=(n,cur)=>{ if(n==null) return '—';
+    const s=CURSYM[cur]||''; const v=Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+    return `<span class="val">${s}${v}</span><span class="cur">${s?'':(cur||'')}</span>`; };
+  const ttype=t=>t==='A'?'BUY':t==='D'?'SELL':'OTHER';
+
+  let mode='signals', country='';
+
+  const ENDPOINT=()=>{
+    const c = country ? `&country=${country}` : '';
+    switch(mode){
+      case 'signals': return `/v1/signals?min_value=10000&limit=150${c}`;
+      case 'buys':    return `/v1/transactions?type=A&limit=150${c}`;
+      case 'sells':   return `/v1/transactions?type=D&limit=150${c}`;
+      default:        return `/v1/transactions?limit=150${c}`;
     }
+  };
 
-    document.querySelectorAll("button[data-mode]").forEach((b) => {
-      b.addEventListener("click", () => {
-        document.querySelectorAll("button[data-mode]").forEach((x) => x.classList.remove("active"));
-        b.classList.add("active");
-        load(b.dataset.mode);
-      });
-    });
-    load("signals");
-  </script>
+  function setTitle(){
+    const cn = country ? `${flag(country)} ${document.querySelector(`#countries .fpill[data-c="${country}"]`)?.textContent.replace(/^\S+\s/,'')||country}` : 'Insider transactions';
+    document.getElementById('title').textContent = country ? cn : 'Insider transactions';
+  }
+
+  async function load(){
+    setTitle();
+    const rowsEl=document.getElementById('rows'), emptyEl=document.getElementById('empty');
+    rowsEl.innerHTML='';
+    let data=[];
+    try{
+      const r=await fetch(ENDPOINT()); const body=await r.json(); data=body.data||[];
+    }catch(e){ data=[]; }
+    // signals endpoint already ranks by value; others: sort by value desc when present
+    if(mode!=='signals') data.sort((a,b)=>Number(b.signal_value||0)-Number(a.signal_value||0));
+    emptyEl.hidden = data.length>0;
+    document.getElementById('s-total').textContent = data.length.toLocaleString('en-US');
+    document.getElementById('s-buys').textContent = data.filter(t=>t.transaction_type==='A').length.toLocaleString('en-US');
+    rowsEl.innerHTML = data.map(t=>`
+      <tr>
+        <td class="mono">${t.transaction_date||'—'}</td>
+        <td><span class="flag">${flag(t.country)}</span><span class="iss">${t.issuer_name||''}</span></td>
+        <td class="hide-sm who">${t.person_name||'—'}</td>
+        <td><span class="chip ${t.transaction_type}">${ttype(t.transaction_type)}</span></td>
+        <td class="hide-sm"><span class="rolechip">${t.role_code||'—'}</span></td>
+        <td class="num hide-sm">${num(t.price)}</td>
+        <td class="num hide-sm">${num(t.volume)}</td>
+        <td class="num">${val(t.signal_value,t.currency)}</td>
+        <td class="hide-sm who">${t.venue||'—'}</td>
+      </tr>`).join('');
+  }
+
+  // wire mode + country pills
+  document.getElementById('modes').addEventListener('click',e=>{
+    const b=e.target.closest('.fpill'); if(!b) return;
+    document.querySelectorAll('#modes .fpill').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); mode=b.dataset.mode; syncUrl(); load();
+  });
+  document.getElementById('countries').addEventListener('click',e=>{
+    const b=e.target.closest('.fpill'); if(!b) return;
+    document.querySelectorAll('#countries .fpill').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); country=b.dataset.c||''; syncUrl(); load();
+  });
+
+  function syncUrl(){
+    const p=new URLSearchParams();
+    if(country) p.set('country',country);
+    if(mode && mode!=='signals') p.set('mode',mode);
+    const q=p.toString();
+    history.replaceState(null,'',q?`?${q}`:location.pathname);
+  }
+
+  // deep-link support: /dashboard?country=NO&mode=buys
+  (function initFromUrl(){
+    const p=new URLSearchParams(location.search);
+    const c=(p.get('country')||'').toUpperCase();
+    const m=p.get('mode');
+    if(c && FLAG[c]){ country=c;
+      document.querySelectorAll('#countries .fpill').forEach(x=>x.classList.toggle('on',x.dataset.c===c)); }
+    if(m && ['recent','buys','sells','signals'].includes(m)){ mode=m;
+      document.querySelectorAll('#modes .fpill').forEach(x=>x.classList.toggle('on',x.dataset.mode===m)); }
+  })();
+  load();
+</script>
 </body>
 </html>

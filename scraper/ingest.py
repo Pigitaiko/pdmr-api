@@ -137,7 +137,10 @@ _STRUCTURED: dict[str, tuple[str, Callable[..., Awaitable[list]]]] = {
     "oslo_bors_no": ("https://api3.oslo.oslobors.no", norway_fetch),
 }
 
-_ALL_SOURCES = (*_SOURCES, *_STRUCTURED)
+# Structured sources first (fast, reliable JSON/CSV/HTML — Sweden alone is ~900 rows in one CSV),
+# then the PDF-download sources (Italy) last. This means a slow or interrupted scrape still yields
+# broad multi-country data quickly instead of only Italy.
+_ALL_SOURCES = (*_STRUCTURED, *_SOURCES)
 
 
 async def run(
