@@ -52,7 +52,7 @@
       sells:   "/v1/transactions?type=D&limit=100",
     };
     const fmt = (n) => n == null ? "—" : Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
-    const FLAG = {IT:"🇮🇹",SE:"🇸🇪",NL:"🇳🇱",FR:"🇫🇷",DE:"🇩🇪"};
+    const FLAG = {IT:"🇮🇹",SE:"🇸🇪",NL:"🇳🇱",FR:"🇫🇷",BE:"🇧🇪",DE:"🇩🇪"};
 
     async function load(mode) {
       const res = await fetch(ENDPOINTS[mode]);
