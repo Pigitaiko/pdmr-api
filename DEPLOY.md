@@ -1,8 +1,9 @@
 # Deploying PDMR to the public web (Render)
 
 This repo ships a **`render.yaml` blueprint** that provisions the whole stack — API + landing
-page, PostgreSQL, and Redis — and serves it on a public HTTPS URL. The free tier is enough to
-share a live, interactive demo.
+page and PostgreSQL — and serves it on a public HTTPS URL. The free tier is enough to share a
+live, interactive demo. (Redis is intentionally omitted; the app rate-limits in-process and
+dedupes at the DB layer without it.)
 
 ## One-time deploy (≈5 minutes, all in the browser)
 
@@ -10,7 +11,7 @@ share a live, interactive demo.
    the repo).
 2. In the Render dashboard: **New → Blueprint**.
 3. Pick the **`Pigitaiko/pdmr-api`** repository. Render detects `render.yaml` and shows the
-   services it will create: `pdmr-db` (Postgres), `pdmr-redis` (Key Value), `pdmr-api` (web).
+   services it will create: `pdmr-db` (Postgres) and `pdmr-api` (web).
 4. Click **Apply**. Render builds the Docker image, runs the database migration, and starts the
    service. First build takes a few minutes.
 5. When `pdmr-api` goes **Live**, click its URL — it looks like
@@ -34,9 +35,9 @@ minute or two of going live the landing page and `/v1/*` endpoints serve live da
   add an always-on scraper: in the Render dashboard create a **Background Worker** from this repo
   with start command `uv run python -m scraper.scheduler` and the same `DATABASE_URL` /
   `REDIS_URL` env vars (Background Workers are a paid instance type).
-- **Redis is optional.** If the blueprint ever errors on the `pdmr-redis` service, delete that
-  block and the two `REDIS_URL` env vars from `render.yaml` — the app falls back to in-process
-  rate-limiting and DB-level dedup automatically.
+- **Coverage:** on first boot the scrape runs every source (`source="all"`) — Italy, Sweden,
+  Netherlands, France, Belgium, the Nasdaq Nordic/Baltic bloc (FI/DK/IS/EE/LV/LT) and Norway —
+  so the live demo shows all 12 markets.
 
 ## Other hosts
 
