@@ -21,7 +21,9 @@ services:
     dockerfilePath: ./Dockerfile
     plan: free # free web service (cold-starts after ~15 min idle)
     healthCheckPath: /health
-    dockerCommand: sh -c "uv run alembic upgrade head && uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    # retry the migration until Postgres is reachable (free-tier DB can lag the web boot),
+    # then serve. The `until` loop keeps a single cold start from aborting on a transient DB blip.
+    dockerCommand: sh -c "until uv run alembic upgrade head; do echo 'db not ready, retrying in 3s'; sleep 3; done && uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -34,4 +36,5 @@ services:
       - key: BOOTSTRAP_SCRAPE
         value: "true" # background-ingest real data on first boot
       - key: BOOTSTRAP_MAX_PAGES
-        value: "6"
+        value: "2" # keep first-boot memory low on the 512 MB free instance (structured
+        # sources ignore this; it only bounds the Italy PDF pagination). Raise once on a paid plan.
