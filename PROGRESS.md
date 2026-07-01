@@ -1,5 +1,32 @@
 # PROGRESS.md
 
+## 2026-07-01 — European expansion: 4 countries live + consolidated product
+
+**Coverage now = 🇮🇹 Italy · 🇸🇪 Sweden · 🇳🇱 Netherlands · 🇫🇷 France** (all live, tested, pushed;
+73 tests green). One source archetype each:
+- **Italy** — eMarketStorage + 1Info (PDF).
+- **Sweden** — Finansinspektionen open CSV (structured; the cleanest).
+- **Netherlands** — AFM XML index + per-record HTML detail.
+- **France** — AMF BDIF JSON API + declaration PDFs (headless *discovered* the API; runtime is raw HTTP).
+
+**Foundation:** `country`/`currency` dimension, `/v1/transactions?country=` filter, `person_name`
+surfaced, structured-source ingest framework, generalized `--source all`. Landing + dashboard show
+country flags + a country filter.
+
+**Blocked / deferred (documented in DECISIONS D-012..D-014):**
+- **Germany (BaFin)** — `robots.txt: Disallow: /`. Off-limits under honour-robots policy.
+- **UK (FCA NSM)** — WAF blocks non-browser *and* headless in-page fetch. Would need anti-bot evasion.
+- **Spain (CNMV)** — JS-rendered, per-issuer/autocomplete search; needs bespoke headless click-scripting.
+
+**Winning pattern (France, Sweden):** find the regulator/exchange's backing JSON API or open CSV and
+hit it over raw HTTP. Playwright is a *discovery* tool (dev-dep only; no runtime browser).
+
+**Next:** add more countries — probe **Euronext's unified disclosure feed** (could unlock BE/PT/IE/NO
+at once), plus Belgium FSMA, Switzerland SIX, Poland, Denmark, Finland. Deploy: Render blueprint ready,
+awaiting the user's one-time account apply.
+
+
+
 ## 2026-06-29 — 1Info source added (both primary sources now live)
 - **1Info fully implemented** via its JSON API — no headless browser (DECISIONS D-009):
   - Reverse-engineered the SPA: `POST /PORTALE1INFO/API/Comunicati` (DataTables) for the listing
