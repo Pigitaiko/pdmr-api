@@ -148,8 +148,13 @@ async def run(
     if source == "all":
         merged = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
         for src in _ALL_SOURCES:
-            for k, v in (await run(max_pages, src)).items():
-                merged[k] += v
+            # isolate each source: a network error / blocked IP / bad response for one source
+            # must never abort the rest of the batch (esp. the first-boot bootstrap scrape).
+            try:
+                for k, v in (await run(max_pages, src)).items():
+                    merged[k] += v
+            except Exception as exc:  # noqa: BLE001 - one source never kills the whole run
+                log.error("source_failed", source=src, error=str(exc))
         return merged
 
     stats = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
