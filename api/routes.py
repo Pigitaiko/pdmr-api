@@ -232,3 +232,28 @@ async def signals(
         data=[TransactionOut.from_tx(r) for r in rows],
         meta=Meta(total=total, limit=limit, offset=offset),
     )
+
+
+@router.get("/admin/refresh")
+async def admin_refresh(
+    token: str = Query(..., description="must match the ADMIN_TOKEN env var"),
+    source: str = Query("all", description="'all' or a single source, e.g. fi_sweden"),
+    max_pages: int = Query(2, ge=1, le=20),
+) -> dict:
+    """Trigger a scrape on demand and return per-run stats. Token-gated (ADMIN_TOKEN env).
+
+    Runs synchronously and returns {discovered, ingested, duplicates, failed, partial}, so it
+    doubles as an observable diagnostic. Use a single fast source (e.g. ``?source=fi_sweden``)
+    for a quick check; ``all`` can take minutes and may exceed the HTTP timeout.
+    """
+    from config import get_settings
+    from scraper.ingest import run
+
+    settings = get_settings()
+    if not settings.admin_token or token != settings.admin_token:
+        raise HTTPException(status_code=403, detail="invalid or unset admin token")
+    try:
+        stats = await run(source=source, max_pages=max_pages)
+    except Exception as exc:  # noqa: BLE001 - surface the error to the caller for diagnosis
+        raise HTTPException(status_code=500, detail=f"{type(exc).__name__}: {exc}") from exc
+    return {"source": source, "stats": stats}

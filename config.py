@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     bootstrap_scrape: bool = False
     bootstrap_max_pages: int = 6
 
+    # token that gates the manual refresh endpoint (GET /v1/admin/refresh?token=...).
+    # empty = endpoint disabled. Lets an operator trigger/observe a scrape on demand.
+    admin_token: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -38,3 +38,5 @@ services:
       - key: BOOTSTRAP_MAX_PAGES
         value: "2" # keep first-boot memory low on the 512 MB free instance (structured
         # sources ignore this; it only bounds the Italy PDF pagination). Raise once on a paid plan.
+      - key: ADMIN_TOKEN
+        generateValue: true # gates GET /v1/admin/refresh — trigger/observe a scrape on demand
