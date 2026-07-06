@@ -142,6 +142,11 @@ _STRUCTURED: dict[str, tuple[str, Callable[..., Awaitable[list]]]] = {
 # broad multi-country data quickly instead of only Italy.
 _ALL_SOURCES = (*_STRUCTURED, *_SOURCES)
 
+# max wall-clock per source in a `run("all")` batch, so one slow/blocked source (e.g. a host that
+# throttles datacenter IPs) can't stall the whole scrape. Generous enough for the PDF-download
+# sources over a ≤1 req/s throttle.
+_SOURCE_TIMEOUT_S = 240
+
 
 async def run(
     max_pages: int = 5, source: str = "emarketstorage", ensure_schema: bool = False
@@ -149,15 +154,23 @@ async def run(
     if ensure_schema:
         await create_all()
     if source == "all":
-        merged = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
+        merged: dict = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}
+        by_source: dict[str, dict] = {}
         for src in _ALL_SOURCES:
-            # isolate each source: a network error / blocked IP / bad response for one source
-            # must never abort the rest of the batch (esp. the first-boot bootstrap scrape).
+            # isolate + time-bound each source: a slow/blocked source (e.g. a host that rejects
+            # datacenter IPs) must neither abort the batch nor stall it indefinitely.
             try:
-                for k, v in (await run(max_pages, src)).items():
+                r = await asyncio.wait_for(run(max_pages, src), timeout=_SOURCE_TIMEOUT_S)
+                for k, v in r.items():
                     merged[k] += v
+                by_source[src] = {k: r[k] for k in ("discovered", "ingested", "failed")}
+            except TimeoutError:
+                log.error("source_timeout", source=src, timeout=_SOURCE_TIMEOUT_S)
+                by_source[src] = {"error": f"timeout>{_SOURCE_TIMEOUT_S}s"}
             except Exception as exc:  # noqa: BLE001 - one source never kills the whole run
                 log.error("source_failed", source=src, error=str(exc))
+                by_source[src] = {"error": f"{type(exc).__name__}: {exc}"}
+        merged["by_source"] = by_source
         return merged
 
     stats = {"discovered": 0, "ingested": 0, "duplicates": 0, "failed": 0, "partial": 0}

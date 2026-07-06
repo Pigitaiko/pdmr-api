@@ -14,10 +14,9 @@ async def test_run_all_isolates_source_failure(monkeypatch):
     # run('all') must swallow them and still return an aggregated stats dict without raising.
     monkeypatch.setattr(ingest, "_ALL_SOURCES", ("does_not_exist", "also_bogus"))
     stats = await ingest.run(max_pages=1, source="all")
-    assert stats == {
-        "discovered": 0,
-        "ingested": 0,
-        "duplicates": 0,
-        "failed": 0,
-        "partial": 0,
-    }
+    # totals stay zero, the run doesn't raise, and each bad source is reported in by_source
+    assert stats["discovered"] == 0
+    assert stats["ingested"] == 0
+    assert stats["failed"] == 0
+    assert set(stats["by_source"]) == {"does_not_exist", "also_bogus"}
+    assert all("error" in v for v in stats["by_source"].values())
