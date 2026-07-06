@@ -55,11 +55,18 @@ def _configure_logging() -> None:
     )
 
 
+# hold strong references to background tasks: asyncio keeps only a weak ref, so without this the
+# GC can cancel the bootstrap scrape mid-flight (silently — no exception), leaving the DB empty.
+_bg_tasks: set[asyncio.Task] = set()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _configure_logging()
     if get_settings().bootstrap_scrape:
-        asyncio.create_task(_bootstrap_scrape_if_empty())  # noqa: RUF006 - fire-and-forget
+        task = asyncio.create_task(_bootstrap_scrape_if_empty())
+        _bg_tasks.add(task)
+        task.add_done_callback(_bg_tasks.discard)
     yield
     await dispose_engine()
 
