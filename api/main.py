@@ -37,7 +37,6 @@ async def _bootstrap_scrape_if_stale() -> None:
 
         from database import session_scope
         from models import Filing
-
         from scraper.ingest import _ALL_SOURCES
 
         settings = get_settings()
