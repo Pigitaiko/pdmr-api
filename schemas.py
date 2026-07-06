@@ -51,6 +51,7 @@ class TransactionOut(BaseModel):
     position_status: str | None = None
     filing_ref: str | None = None
     source_url: str | None = None
+    parse_status: str | None = None
 
     @field_serializer("price", "volume", "signal_value")
     def _ser_decimal(self, v: Decimal | None) -> str | None:
@@ -66,6 +67,7 @@ class TransactionOut(BaseModel):
             out.position_status = filing.position_status
             out.filing_ref = filing.filing_id
             out.source_url = filing.source_url
+            out.parse_status = filing.parse_status
             if filing.issuer is not None:
                 out.issuer_name = filing.issuer.name
             if filing.person is not None:

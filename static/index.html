@@ -192,7 +192,10 @@
   const esc=s=>String(s).replace(/"/g,'&quot;');
   function insiderCell(t){
     if(!t.person_name) return '—';
-    if(t.is_legal_person) return t.person_name;         // a legal entity isn't a LinkedIn person
+    // only link a KNOWN person: a confidently-parsed (success) natural person. Partial parses
+    // (uncertain/garbled names) and legal entities stay plain text.
+    const known = t.parse_status==='success' && !t.is_legal_person;
+    if(!known) return t.person_name;
     return `<a href="${esc(liUrl(t.person_name,t.issuer_name))}" target="_blank" rel="noopener noreferrer">${t.person_name}</a>`;
   }
   const srcCell=t=>t.source_url?`<a class="src" href="${esc(t.source_url)}" target="_blank" rel="noopener noreferrer" title="Official filing">↗</a>`:'';
