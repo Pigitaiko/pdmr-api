@@ -84,6 +84,16 @@
   tbody a:hover{text-decoration:underline}
   a.src{margin-left:7px;opacity:.55;font-weight:800}
   a.src:hover{opacity:1}
+  /* portfolio (person) header */
+  .phead{border:1px solid var(--line);border-radius:20px;background:var(--mint);padding:20px 22px;margin:8px 0 14px}
+  .phead .back{display:inline-block;color:var(--green-ink);font-weight:700;font-size:14px;margin-bottom:12px}
+  .phead .back:hover{text-decoration:underline}
+  .phead-main{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .phead .pname{font-size:24px;font-weight:850;letter-spacing:-.02em}
+  .phead .pmeta{color:var(--muted);font-size:14px;margin-top:3px}
+  .pstats{display:flex;gap:26px;margin-top:16px;flex-wrap:wrap}
+  .pstats .n{font-size:22px;font-weight:850}
+  .pstats .l{font-size:12.5px;color:var(--muted)}
   .val{font-weight:850}
   .cur{color:var(--muted);font-weight:600;font-size:11px;margin-left:3px}
   .empty{padding:56px 24px;text-align:center;color:var(--muted)}
@@ -127,7 +137,7 @@
   </div>
 </div>
 
-<div class="controls">
+<div class="controls" id="controls">
   <div class="wrap">
     <div class="filters" id="modes">
       <button class="fpill mode on" data-mode="recent">All recent</button>
@@ -156,6 +166,7 @@
 </div>
 
 <div class="wrap">
+  <div id="phead" class="phead" hidden></div>
   <div class="tablewrap">
     <table>
       <thead>
@@ -192,17 +203,18 @@
   const esc=s=>String(s).replace(/"/g,'&quot;');
   function insiderCell(t){
     if(!t.person_name) return '—';
-    // only link a KNOWN person: a confidently-parsed (success) natural person. Partial parses
-    // (uncertain/garbled names) and legal entities stay plain text.
-    const known = t.parse_status==='success' && !t.is_legal_person;
+    // only a KNOWN person (confidently-parsed natural person, with an id) links to their
+    // portfolio. Partial parses (uncertain/garbled names) and legal entities stay plain text.
+    const known = t.parse_status==='success' && !t.is_legal_person && t.person_id;
     if(!known) return t.person_name;
-    return `<a href="${esc(liUrl(t.person_name,t.issuer_name))}" target="_blank" rel="noopener noreferrer">${t.person_name}</a>`;
+    return `<a href="?person=${t.person_id}" title="See ${esc(t.person_name)}'s filing history">${t.person_name}</a>`;
   }
   const srcCell=t=>t.source_url?`<a class="src" href="${esc(t.source_url)}" target="_blank" rel="noopener noreferrer" title="Official filing">↗</a>`:'';
 
-  let mode='recent', country='';
+  let mode='recent', country='', person=null;
 
   const ENDPOINT=()=>{
+    if(person) return `/v1/transactions?person=${person}&limit=300`;
     const c = country ? `&country=${country}` : '';
     switch(mode){
       case 'signals': return `/v1/signals?min_value=10000&limit=150${c}`;
@@ -217,16 +229,49 @@
     document.getElementById('title').textContent = country ? cn : 'Insider transactions';
   }
 
+  function renderPersonHead(data){
+    const phead=document.getElementById('phead');
+    document.getElementById('controls').style.display='none';
+    const name=data[0]?.person_name||'Insider';
+    const role=data[0]?.position_status||data[0]?.role_code||'';
+    const issuers=[...new Set(data.map(t=>t.issuer_name).filter(Boolean))];
+    const buys=data.filter(t=>t.transaction_type==='A').length;
+    const sells=data.filter(t=>t.transaction_type==='D').length;
+    document.getElementById('title').textContent=name;
+    phead.hidden=false;
+    phead.innerHTML=`
+      <a class="back" href="${location.pathname}">← All transactions</a>
+      <div class="phead-main">
+        <div>
+          <div class="pname">${name}</div>
+          <div class="pmeta">${role?role+' · ':''}${issuers.slice(0,3).join(', ')}${issuers.length>3?' +'+(issuers.length-3)+' more':''}</div>
+        </div>
+        <a class="pill ghost" href="${esc(liUrl(name,issuers[0]||''))}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+      </div>
+      <div class="pstats">
+        <div><div class="n">${data.length}</div><div class="l">disclosed transactions</div></div>
+        <div><div class="n pos">${buys}</div><div class="l">buys</div></div>
+        <div><div class="n">${sells}</div><div class="l">sells</div></div>
+        <div><div class="n">${issuers.length}</div><div class="l">${issuers.length===1?'company':'companies'}</div></div>
+      </div>`;
+  }
+
   async function load(){
-    setTitle();
     const rowsEl=document.getElementById('rows'), emptyEl=document.getElementById('empty');
     rowsEl.innerHTML='';
     let data=[];
     try{
       const r=await fetch(ENDPOINT()); const body=await r.json(); data=body.data||[];
     }catch(e){ data=[]; }
-    // signals endpoint already ranks by value; others: sort by value desc when present
-    if(mode!=='signals') data.sort((a,b)=>Number(b.signal_value||0)-Number(a.signal_value||0));
+    if(person){
+      data.sort((a,b)=>String(b.transaction_date||'').localeCompare(String(a.transaction_date||'')));
+      renderPersonHead(data);
+    }else{
+      document.getElementById('phead').hidden=true;
+      setTitle();
+      // signals endpoint already ranks by value; others: sort by value desc when present
+      if(mode!=='signals') data.sort((a,b)=>Number(b.signal_value||0)-Number(a.signal_value||0));
+    }
     emptyEl.hidden = data.length>0;
     document.getElementById('s-total').textContent = data.length.toLocaleString('en-US');
     document.getElementById('s-buys').textContent = data.filter(t=>t.transaction_type==='A').length.toLocaleString('en-US');
@@ -264,9 +309,11 @@
     history.replaceState(null,'',q?`?${q}`:location.pathname);
   }
 
-  // deep-link support: /dashboard?country=NO&mode=buys
+  // deep-link support: /dashboard?person=42 (portfolio) | ?country=NO&mode=buys
   (function initFromUrl(){
     const p=new URLSearchParams(location.search);
+    const pid=parseInt(p.get('person')||'',10);
+    if(pid){ person=pid; return; }  // portfolio mode takes over
     const c=(p.get('country')||'').toUpperCase();
     const m=p.get('mode');
     if(c && FLAG[c]){ country=c;

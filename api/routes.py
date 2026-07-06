@@ -42,6 +42,7 @@ async def list_transactions(
     type: str | None = Query(None, description="transaction_type A/D/O"),
     role: str | None = Query(None, description="role_code (e.g. AD, CFO, DIR)"),
     min_value: Decimal | None = Query(None, ge=0, description="signal_value >="),
+    person: int | None = Query(None, description="person id — that insider's full history"),
     source: str | None = Query(None),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
@@ -59,6 +60,8 @@ async def list_transactions(
     filing_conditions = []
     if role:
         filing_conditions.append(Filing.role_code == role.upper())
+    if person is not None:
+        filing_conditions.append(Filing.person_id == person)
     if country:
         filing_conditions.append(Filing.country == country.upper())
     if source:
@@ -72,8 +75,8 @@ async def list_transactions(
     base = select(Transaction)
     count_q = select(func.count()).select_from(Transaction)
     if needs_join:
-        base = base.join(Transaction.filing).join(Filing.issuer)
-        count_q = count_q.join(Transaction.filing).join(Filing.issuer)
+        base = base.join(Transaction.filing).join(Filing.issuer, isouter=True)
+        count_q = count_q.join(Transaction.filing).join(Filing.issuer, isouter=True)
 
     for c in conditions + filing_conditions:
         base = base.where(c)

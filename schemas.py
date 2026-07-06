@@ -46,6 +46,7 @@ class TransactionOut(BaseModel):
     country: str | None = None
     issuer_name: str | None = None
     person_name: str | None = None
+    person_id: int | None = None
     is_legal_person: bool | None = None
     role_code: str | None = None
     position_status: str | None = None
@@ -72,6 +73,7 @@ class TransactionOut(BaseModel):
                 out.issuer_name = filing.issuer.name
             if filing.person is not None:
                 out.person_name = filing.person.full_name
+                out.person_id = filing.person_id
                 out.is_legal_person = filing.person.is_legal_person
         return out
 
