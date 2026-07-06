@@ -108,6 +108,16 @@ app.add_middleware(
 app.include_router(router)
 
 
+@app.middleware("http")
+async def _revalidate_html(request, call_next):  # type: ignore[no-untyped-def]
+    """Serve HTML with no-cache so a redeploy's landing/dashboard shows on a normal reload
+    (still revalidates via ETag — a 304 when unchanged, so it's cheap)."""
+    resp = await call_next(request)
+    if "text/html" in resp.headers.get("content-type", ""):
+        resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return resp
+
+
 @app.get("/health")
 async def health() -> dict[str, Any]:
     return {"status": "ok", "service": "pdmr-api", "version": "0.1.0"}
