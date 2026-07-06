@@ -201,7 +201,7 @@ async def signals(
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> TransactionListOut:
-    """Open-market senior-insider buys: type=A, price>0, role in the senior set, signal>=min_value."""
+    """Open-market senior-insider buys: type=A, price>0, senior role, signal>=min_value."""
     roles = ("AD", "CFO", "CHAIR", "DIR", "MGMT")
     cond = (
         (Transaction.transaction_type == "A")
