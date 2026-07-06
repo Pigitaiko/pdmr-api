@@ -27,7 +27,9 @@ jobs:
           TOKEN: ${{ secrets.PDMR_ADMIN_TOKEN }}
         run: |
           BASE="${{ vars.PDMR_BASE_URL || 'https://pdmr-api.onrender.com' }}"
-          curl -sS "$BASE/v1/admin/refresh?token=$TOKEN&source=all" \
+          # -G + --data-urlencode: token is url-encoded, so +/=/& in it can't corrupt the query
+          curl -sS -G "$BASE/v1/admin/refresh" \
+            --data-urlencode "token=$TOKEN" --data-urlencode "source=all" \
             -o /dev/null -w "refresh -> HTTP %{http_code}\n"
       - name: Report status
         run: |

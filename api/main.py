@@ -38,16 +38,24 @@ async def _bootstrap_scrape_if_stale() -> None:
         from database import session_scope
         from models import Filing
 
+        from scraper.ingest import _ALL_SOURCES
+
         settings = get_settings()
         async with session_scope() as session:
             newest = (await session.execute(select(func.max(Filing.ingested_at)))).scalar_one()
-        if newest is not None:
+            present = set(
+                (await session.execute(select(Filing.source).distinct())).scalars().all()
+            )
+        missing = [s for s in _ALL_SOURCES if s not in present]
+        if newest is not None and not missing:
             if newest.tzinfo is None:
                 newest = newest.replace(tzinfo=UTC)
             age = datetime.now(UTC) - newest
             if age < timedelta(hours=settings.bootstrap_stale_hours):
                 log.info("bootstrap_skipped_fresh", age_hours=round(age.total_seconds() / 3600, 1))
                 return
+        # empty, stale, or a registered source has no rows yet (e.g. a newly-added market)
+        log.info("bootstrap_scrape_launch", missing=missing)
         launch_scrape("all", settings.bootstrap_max_pages, trigger="bootstrap")
     except Exception as exc:  # noqa: BLE001 - never let bootstrap crash the app
         log.error("bootstrap_scrape_failed", error=str(exc))
