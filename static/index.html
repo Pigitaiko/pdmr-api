@@ -126,8 +126,8 @@
 <div class="controls">
   <div class="wrap">
     <div class="filters" id="modes">
-      <button class="fpill mode on" data-mode="signals">C-suite buy signals</button>
-      <button class="fpill mode" data-mode="recent">All recent</button>
+      <button class="fpill mode on" data-mode="recent">All recent</button>
+      <button class="fpill mode" data-mode="signals">C-suite buy signals</button>
       <button class="fpill mode" data-mode="buys">Buys</button>
       <button class="fpill mode" data-mode="sells">Sells</button>
     </div>
@@ -184,7 +184,7 @@
     return `<span class="val">${s}${v}</span><span class="cur">${s?'':(cur||'')}</span>`; };
   const ttype=t=>t==='A'?'BUY':t==='D'?'SELL':'OTHER';
 
-  let mode='signals', country='';
+  let mode='recent', country='';
 
   const ENDPOINT=()=>{
     const c = country ? `&country=${country}` : '';
