@@ -17,12 +17,18 @@ jobs:
   wake:
     runs-on: ubuntu-latest
     steps:
-      - name: Wake the app (it self-refreshes stale data on wake)
+      - name: Wake the app (it also self-refreshes stale data on wake)
         run: |
           BASE="${{ vars.PDMR_BASE_URL || 'https://pdmr-api.onrender.com' }}"
           curl -fsS --retry 6 --retry-delay 15 --retry-all-errors "$BASE/health" -o /dev/null \
             && echo "awake" || echo "wake attempt done"
-      - name: Report status after wake
+      - name: Trigger an explicit refresh when a token is configured
+        if: ${{ secrets.PDMR_ADMIN_TOKEN != '' }}
+        run: |
+          BASE="${{ vars.PDMR_BASE_URL || 'https://pdmr-api.onrender.com' }}"
+          curl -fsS "$BASE/v1/admin/refresh?token=${{ secrets.PDMR_ADMIN_TOKEN }}&source=all" \
+            -o /dev/null -w "refresh -> HTTP %{http_code}\n"
+      - name: Report status
         run: |
           BASE="${{ vars.PDMR_BASE_URL || 'https://pdmr-api.onrender.com' }}"
           sleep 25
