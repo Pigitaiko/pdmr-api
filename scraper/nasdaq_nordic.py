@@ -109,17 +109,24 @@ def _person_and_issuer(text: str) -> tuple[str | None, str | None]:
     return _value_after(head, name_re), _value_after(tail, name_re)
 
 
+_MONTHS = {
+    m: i for i, m in enumerate("jan feb mar apr may jun jul aug sep oct nov dec".split(), start=1)
+}
+
+
 def _parse_date(raw: str | None) -> date | None:
     if not raw:
         return None
-    m = re.search(r"(\d{4})[-.](\d{1,2})[-.](\d{1,2})", raw)  # 2026-07-01 / 2026.06.30
+    m = re.search(r"(\d{4})[-./](\d{1,2})[-./](\d{1,2})", raw)  # 2026-07-01 / 2026.06.30
     if m:
         y, mo, d = (int(x) for x in m.groups())
-    else:
-        m = re.search(r"(\d{1,2})[.](\d{1,2})[.](\d{4})", raw)  # 30.06.2026
-        if not m:
-            return None
+    elif m := re.search(r"(\d{1,2})[-./](\d{1,2})[-./](\d{4})", raw):  # 30.06.2026 / 05/09/2024
         d, mo, y = (int(x) for x in m.groups())
+    elif m := re.search(r"(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})", raw):  # 5 September 2024
+        d, mon, y = int(m.group(1)), m.group(2)[:3].lower(), int(m.group(3))
+        mo = _MONTHS.get(mon, 0)
+    else:
+        return None
     try:
         return date(y, mo, d)
     except ValueError:

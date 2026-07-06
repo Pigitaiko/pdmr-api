@@ -23,6 +23,7 @@ from database import create_all, dispose_engine, session_scope
 from scraper.afm_nl import fetch_filings as nl_fetch
 from scraper.amf_fr import fetch_filings as france_fetch
 from scraper.emarketstorage import ListingItem, fetch_internal_dealing
+from scraper.fca_uk import fetch_filings as uk_fetch
 from scraper.fi_sweden import fetch_filings as sweden_fetch
 from scraper.fsma_be import fetch_filings as belgium_fetch
 from scraper.http import PoliteClient
@@ -30,6 +31,7 @@ from scraper.nasdaq_nordic import fetch_filings as nasdaq_fetch
 from scraper.oneinfo import fetch_internal_dealing as oneinfo_fetch
 from scraper.oslo_bors_no import fetch_filings as norway_fetch
 from scraper.parser import parse_filing
+from scraper.six_ch import fetch_filings as swiss_fetch
 from scraper.store import upsert_filing
 
 log = structlog.get_logger()
@@ -135,6 +137,8 @@ _STRUCTURED: dict[str, tuple[str, Callable[..., Awaitable[list]]]] = {
     "fsma_be": ("https://www.fsma.be", belgium_fetch),
     "nasdaq_nordic": ("https://api.news.eu.nasdaq.com", nasdaq_fetch),
     "oslo_bors_no": ("https://api3.oslo.oslobors.no", norway_fetch),
+    "six_ch": ("https://www.ser-ag.com", swiss_fetch),
+    "fca_uk": ("https://api.data.fca.org.uk", uk_fetch),
 }
 
 # Structured sources first (fast, reliable JSON/CSV/HTML — Sweden alone is ~900 rows in one CSV),

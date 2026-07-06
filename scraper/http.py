@@ -84,6 +84,7 @@ class PoliteClient:
         url: str,
         *,
         data: dict | None = None,
+        json: object | None = None,
         headers: dict | None = None,
         max_retries: int = 3,
     ) -> httpx.Response:
@@ -92,7 +93,7 @@ class PoliteClient:
         backoff = 2.0
         for attempt in range(max_retries + 1):
             await self._throttle()
-            resp = await self._client.post(url, data=data, headers=headers)
+            resp = await self._client.post(url, data=data, json=json, headers=headers)
             if resp.status_code == 429:
                 wait = float(resp.headers.get("Retry-After", backoff))
                 log.warning("rate_limited", url=url, wait=wait, attempt=attempt)

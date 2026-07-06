@@ -103,14 +103,15 @@ async def status() -> dict[str, Any]:
     from models import Filing
     from scraper.bg import SCRAPE_STATE
 
+    filings: int | None = None
+    db_ok: bool | str = True
     try:
         async with session_scope() as session:
             filings = (
                 await session.execute(select(func.count()).select_from(Filing))
             ).scalar_one()
-        db_ok = True
     except Exception as exc:  # noqa: BLE001 - report DB errors instead of crashing the probe
-        filings, db_ok = None, f"{type(exc).__name__}: {exc}"
+        db_ok = f"{type(exc).__name__}: {exc}"
     return {
         "filings": filings,
         "db_ok": db_ok,

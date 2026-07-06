@@ -1,0 +1,36 @@
+{
+ "hits": {
+  "hits": [
+   {
+    "_source": {
+     "submitted_date": "2026-06-29T16:30:09Z",
+     "lei": "213800ZSR3HVKMMPVG86",
+     "type": "Director/PDMR Shareholding",
+     "headline": "PDMR transaction notification ",
+     "download_link": "NSM/RNS/6b0e6f86-059f-462d-ac74-3e38c996109d.html",
+     "disclosure_id": "6b0e6f86-059f-462d-ac74-3e38c996109d"
+    }
+   },
+   {
+    "_source": {
+     "submitted_date": "2026-06-18T11:12:11Z",
+     "lei": "2138003LWDII27UTAG52",
+     "type": "Director/PDMR Shareholding",
+     "headline": "Director/PDMR Transaction",
+     "download_link": "NSM/RNS/dd31f937-c022-4541-87ed-6890cb0d35f7.html",
+     "disclosure_id": "dd31f937-c022-4541-87ed-6890cb0d35f7"
+    }
+   },
+   {
+    "_source": {
+     "submitted_date": "2026-06-02T08:12:25Z",
+     "lei": "213800ZSR3HVKMMPVG86",
+     "type": "Director/PDMR Shareholding",
+     "headline": "PDMR transaction notification ",
+     "download_link": "NSM/RNS/696a808f-3b34-4933-b5aa-ac194b50a202.html",
+     "disclosure_id": "696a808f-3b34-4933-b5aa-ac194b50a202"
+    }
+   }
+  ]
+ }
+}

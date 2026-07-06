@@ -178,7 +178,7 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <span class="eyebrow"><span class="live"></span> LIVE · 🇮🇹 🇸🇪 🇳🇱 🇫🇷 🇧🇪 🇫🇮 🇩🇰 🇮🇸 🇪🇪 🇱🇻 🇱🇹 🇳🇴 · ART. 19 MAR</span>
+      <span class="eyebrow"><span class="live"></span> LIVE · 🇮🇹 🇸🇪 🇳🇱 🇫🇷 🇧🇪 🇫🇮 🇩🇰 🇮🇸 🇪🇪 🇱🇻 🇱🇹 🇳🇴 🇨🇭 🇬🇧 · ART. 19 MAR</span>
       <h1>See what <em>insiders</em> are buying — across Europe.</h1>
       <p class="lede">Every director and executive at a listed European company has to disclose when
         they trade their own stock. We aggregate it the moment it's filed — one API, every market.</p>
@@ -189,7 +189,7 @@
       <div class="trust">
         <div><div class="n" id="t-filings">2,000+</div><div class="l">filings tracked</div></div>
         <div><div class="n" id="t-tx">3,000+</div><div class="l">transactions</div></div>
-        <div><div class="n">12</div><div class="l">countries</div></div>
+        <div><div class="n">14</div><div class="l">countries</div></div>
       </div>
     </div>
 
@@ -231,6 +231,8 @@
         <button class="fpill" data-c="LV">🇱🇻 Latvia</button>
         <button class="fpill" data-c="LT">🇱🇹 Lithuania</button>
         <button class="fpill" data-c="NO">🇳🇴 Norway</button>
+        <button class="fpill" data-c="CH">🇨🇭 Switzerland</button>
+        <button class="fpill" data-c="GB">🇬🇧 UK</button>
       </div>
     </div>
     <div class="cards" id="cards">
@@ -296,7 +298,7 @@
 <section id="coverage">
   <div class="wrap">
     <div class="klabel">Coverage</div>
-    <h2>Twelve markets. One normalized feed.</h2>
+    <h2>Fourteen markets. One normalized feed.</h2>
     <p class="sub">Every country publishes the same Art. 19 disclosure in a different way — PDF, CSV,
       XML, JSON. We do the integration once and hand you one clean schema. <b>Pick a market to explore
       it live →</b></p>
@@ -314,6 +316,8 @@
       <a class="mchip" href="/dashboard?country=LV">🇱🇻 Latvia</a>
       <a class="mchip" href="/dashboard?country=LT">🇱🇹 Lithuania</a>
       <a class="mchip" href="/dashboard?country=NO">🇳🇴 Norway</a>
+      <a class="mchip" href="/dashboard?country=CH">🇨🇭 Switzerland</a>
+      <a class="mchip" href="/dashboard?country=GB">🇬🇧 UK</a>
     </div>
     <div class="cov" style="grid-template-columns:repeat(2,1fr)">
       <a class="step" href="/dashboard?country=IT"><span class="go">explore →</span><h3>🇮🇹 Italy <span class="pos mono" style="font-size:13px">● live</span></h3>
@@ -329,6 +333,12 @@
       <a class="step" href="/dashboard?country=NO"><span class="go">explore →</span><h3>🇳🇴 Norway <span class="pos mono" style="font-size:13px">● live</span></h3>
         <p style="color:var(--muted);margin:8px 0 0">Oslo Børs NewsWeb OAM — its JSON API + Finanstilsynet's
           standard KRT-1500 managers'-transaction form (prices in NOK).</p></a>
+      <a class="step" href="/dashboard?country=CH"><span class="go">explore →</span><h3>🇨🇭 Switzerland <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">SIX Exchange Regulation JSON API (FMIA regime). Prices in CHF.
+          Swiss law omits the person's name — role &amp; transaction only.</p></a>
+      <a class="step" href="/dashboard?country=GB"><span class="go">explore →</span><h3>🇬🇧 United Kingdom <span class="pos mono" style="font-size:13px">● live</span></h3>
+        <p style="color:var(--muted);margin:8px 0 0">FCA National Storage Mechanism — RNS PDMR notifications
+          (UK MAR), the harmonized Art. 19 template parsed from each announcement.</p></a>
       <div class="step" style="grid-column:1/-1"><h3>🇫🇮 🇩🇰 🇮🇸 🇪🇪 🇱🇻 🇱🇹 Nordics &amp; Baltics <span class="pos mono" style="font-size:13px">● live</span></h3>
         <p style="color:var(--muted);margin:8px 0 0">Nasdaq Nordic's OAM — one JSON news API covering the whole bloc; each disclosure's
           harmonized Art. 19 template parsed. Explore:
@@ -371,7 +381,7 @@
   const num=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
   const ttype=t=>t==='A'?'BUY':t==='D'?'SELL':'OTHER';
   const FLAG={IT:'🇮🇹',SE:'🇸🇪',NL:'🇳🇱',FR:'🇫🇷',BE:'🇧🇪',DE:'🇩🇪',
-              FI:'🇫🇮',DK:'🇩🇰',IS:'🇮🇸',EE:'🇪🇪',LV:'🇱🇻',LT:'🇱🇹',NO:'🇳🇴'};
+              FI:'🇫🇮',DK:'🇩🇰',IS:'🇮🇸',EE:'🇪🇪',LV:'🇱🇻',LT:'🇱🇹',NO:'🇳🇴',CH:'🇨🇭',GB:'🇬🇧'};
   const flag=c=>FLAG[c]||'🇪🇺';
 
   let SIGNALS=[];              // cached cross-country buys (sorted by value)

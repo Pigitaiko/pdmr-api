@@ -14,9 +14,10 @@ mandatory disclosures under **Art. 19 MAR, Regulation (EU) 596/2014** — from p
 **multiple European markets**, normalises them into one schema, stores them in PostgreSQL, and serves
 them via a documented REST API. EU analogue of the SEC EDGAR Form 4 feed.
 
-**Live coverage (2026-07-01): 🇮🇹 Italy · 🇸🇪 Sweden · 🇳🇱 Netherlands · 🇫🇷 France · 🇧🇪 Belgium ·
-🇫🇮 Finland · 🇩🇰 Denmark · 🇮🇸 Iceland · 🇪🇪 Estonia · 🇱🇻 Latvia · 🇱🇹 Lithuania · 🇳🇴 Norway —
-12 markets.** Each country is a pluggable source adapter normalising to the same `ParsedFiling`; every
+**Live coverage: 🇮🇹 Italy · 🇸🇪 Sweden · 🇳🇱 Netherlands · 🇫🇷 France · 🇧🇪 Belgium · 🇫🇮 Finland ·
+🇩🇰 Denmark · 🇮🇸 Iceland · 🇪🇪 Estonia · 🇱🇻 Latvia · 🇱🇹 Lithuania · 🇳🇴 Norway · 🇨🇭 Switzerland ·
+🇬🇧 United Kingdom — 14 markets.** (CH: SER JSON API, FMIA regime, no person names by Swiss law.
+GB: FCA NSM Elasticsearch API → RNS PDMR docs parsed via the shared harmonised-template parser.) Each country is a pluggable source adapter normalising to the same `ParsedFiling`; every
 filing carries a `country`. Italy is PDF (the original Allegato 3F parser); the others are structured
 sources (CSV / XML+HTML / JSON-API+PDF). Two OAM (exchange disclosure-hub) adapters cover most of the
 map: `scraper/nasdaq_nordic.py` (one API → FI/DK/IS/EE/LV/LT — the biggest single unlock) and

@@ -4,6 +4,30 @@ Append-only. Each entry: context → decision → reasoning. Newest first within
 
 ## Session 2026-07-01 (European expansion cont.)
 
+### D-017 — Switzerland (SER) + United Kingdom (FCA NSM) via headless API discovery
+**Context:** Both were previously in the blocked column (CH "no names / SPA", UK "WAF"). Re-probed
+with a headless browser (Playwright) to capture the SPAs' real backing calls — the pattern that
+unlocked France/Nasdaq.
+**Switzerland — `scraper/six_ch.py`:** the SER management-transactions React page calls a clean
+public JSON API: `www.ser-ag.com/sheldon/management_transactions/v1/overview.json` (paginated,
+~6,700 records). One structured adapter maps each record: issuer, function code (1→board/DIR,
+2→executive/MGMT), buySellIndicator (1→A, 2→D), price/volume in CHF, ISIN, date. **By Swiss law
+(FMIA) the person's name is never published** — so `person_full_name` is always None; everything
+else is present. Robots allow `/sheldon/`.
+**United Kingdom — `scraper/fca_uk.py`:** the FCA National Storage Mechanism is a React app over an
+Elasticsearch API. Discovery: the search endpoint is `api.data.fca.org.uk/search?index=fca-nsm-searchdata`
+(**index is a query param, not in the body** — that was the crux; GET/no-index returns API-Gateway
+"Missing Authentication Token"). POST body `{from,size,keyword,sort,sortorder,criteriaObj:{criteria,
+dateCriteria}}` with `Origin/Referer` headers. Filter hits to `type == "Director/PDMR Shareholding"`,
+download each RNS doc (`data.fca.org.uk/artefacts/<download_link>`) — the standard EU-harmonised Art.
+19 template — and parse via the shared `nasdaq_nordic.parse_mar_text` (RNS HTML stripped to
+line-preserving text first). **Partial-heavy:** person + date + ISIN + link land reliably, but
+issuer name / exact price / volume are partial because RNS HTML formatting varies by information
+provider. Extended the shared `_parse_date` to handle `DD/MM/YYYY` and text months for UK.
+**Result:** 12 → 14 markets. `PoliteClient.post` gained a `json=` param. 96 tests green.
+**Ireland:** attempted — no national PDMR register; Euronext Dublin RIS is the only route and its
+company-news is robots-restricted / not a cleanly separable PDMR feed. Left unbuilt (honest wall).
+
 ### D-016 — Norway (Oslo Børs NewsWeb OAM): KRT-1500 form + harmonised template
 **Context:** After the Nasdaq OAM unlock, Norway is the other Nordic OAM — Oslo Børs runs its *own*
 NewsWeb (not on Nasdaq's). It exposes a clean public JSON API (`api3.oslo.oslobors.no/v1/newsreader`);
