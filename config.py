@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     # deploy so the site has real data without a separate always-on worker).
     bootstrap_scrape: bool = False
     bootstrap_max_pages: int = 6
+    # on startup/wake, re-scrape if the newest filing is older than this many hours (self-refresh
+    # without a paid worker or any external secret — a periodic wake ping is enough to keep fresh).
+    bootstrap_stale_hours: int = 6
 
     # token that gates the manual refresh endpoint (GET /v1/admin/refresh?token=...).
     # empty = endpoint disabled. Lets an operator trigger/observe a scrape on demand.

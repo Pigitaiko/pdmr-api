@@ -21,22 +21,34 @@ from database import dispose_engine
 log = structlog.get_logger()
 
 
-async def _bootstrap_scrape_if_empty() -> None:
-    """On first boot, if the DB is empty, launch a full scrape in the background."""
+async def _bootstrap_scrape_if_stale() -> None:
+    """On startup/wake, launch a full scrape if the DB is empty OR its newest filing is stale.
+
+    This is the free-tier self-refresh: no paid worker and no external secret needed — any periodic
+    wake (organic traffic, an uptime ping, or the scheduled health-ping workflow) lets the app
+    top up its own data. Idempotent ingest means re-running only adds genuinely new filings.
+    """
     from scraper.bg import launch_scrape
 
     try:
+        from datetime import UTC, datetime, timedelta
+
         from sqlalchemy import func, select
 
         from database import session_scope
         from models import Filing
 
+        settings = get_settings()
         async with session_scope() as session:
-            count = (await session.execute(select(func.count()).select_from(Filing))).scalar_one()
-        if count:
-            log.info("bootstrap_skipped", count=count)
-            return
-        launch_scrape("all", get_settings().bootstrap_max_pages, trigger="bootstrap")
+            newest = (await session.execute(select(func.max(Filing.ingested_at)))).scalar_one()
+        if newest is not None:
+            if newest.tzinfo is None:
+                newest = newest.replace(tzinfo=UTC)
+            age = datetime.now(UTC) - newest
+            if age < timedelta(hours=settings.bootstrap_stale_hours):
+                log.info("bootstrap_skipped_fresh", age_hours=round(age.total_seconds() / 3600, 1))
+                return
+        launch_scrape("all", settings.bootstrap_max_pages, trigger="bootstrap")
     except Exception as exc:  # noqa: BLE001 - never let bootstrap crash the app
         log.error("bootstrap_scrape_failed", error=str(exc))
 
@@ -62,7 +74,7 @@ _bg_tasks: set[asyncio.Task] = set()
 async def lifespan(app: FastAPI):
     _configure_logging()
     if get_settings().bootstrap_scrape:
-        task = asyncio.create_task(_bootstrap_scrape_if_empty())
+        task = asyncio.create_task(_bootstrap_scrape_if_stale())
         _bg_tasks.add(task)
         task.add_done_callback(_bg_tasks.discard)
     yield
