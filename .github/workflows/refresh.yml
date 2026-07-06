@@ -1,0 +1,35 @@
+name: Refresh data
+
+# Keeps the live deploy's data fresh without a paid always-on worker: on a schedule (and on demand),
+# ping the app's token-gated refresh endpoint, which runs an idempotent scrape in the background.
+# Setup: add repo secret PDMR_ADMIN_TOKEN (the app's ADMIN_TOKEN, from Render → Environment).
+# Optional: add repo variable PDMR_BASE_URL to point at a different deploy.
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours (UTC) — adjust as you like
+  workflow_dispatch: {} # manual "Run workflow" button
+
+concurrency:
+  group: pdmr-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake the instance (free tier cold-starts)
+        run: |
+          BASE="${{ vars.PDMR_BASE_URL || 'https://pdmr-api.onrender.com' }}"
+          curl -fsS --retry 6 --retry-delay 15 --retry-all-errors "$BASE/health" -o /dev/null \
+            && echo "awake" || echo "wake attempt done"
+      - name: Trigger scrape (all sources, idempotent)
+        run: |
+          BASE="${{ vars.PDMR_BASE_URL || 'https://pdmr-api.onrender.com' }}"
+          curl -fsS "$BASE/v1/admin/refresh?token=${{ secrets.PDMR_ADMIN_TOKEN }}&source=all" \
+            -o /dev/null -w "refresh -> HTTP %{http_code}\n"
+      - name: Report status
+        run: |
+          BASE="${{ vars.PDMR_BASE_URL || 'https://pdmr-api.onrender.com' }}"
+          sleep 20
+          curl -fsS "$BASE/status" | python3 -m json.tool || true
