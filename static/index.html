@@ -201,11 +201,17 @@
   // deterministic profile deep-link (no backend calls): LinkedIn people-search for name + company
   const liUrl=(name,issuer)=>'https://www.linkedin.com/search/results/people/?keywords='+encodeURIComponent(name+(issuer?' '+issuer:''));
   const esc=s=>String(s).replace(/"/g,'&quot;');
+  // company-name detector: the is_legal_person flag is unreliable across sources, so also catch
+  // legal entities by name. Long keywords are case-insensitive; short abbreviations are
+  // case-SENSITIVE (uppercase) so a name like "Åsa" doesn't false-match the "SA" company form.
+  const LEGAL_KW=/(\bLtd\b|\bLimited\b|\bLLC\b|\bLLP\b|\bInc\b|\bCorp|\bPLC\b|\bGmbH\b|\bSARL\b|\bSpA\b|\bOyj?\b|\bHolding|\bInvest|\bCapital\b|\bPartners\b|\bVentures\b|\bGroup\b|\bTrust\b|\bFund\b|\bFonden\b|\bFörvaltning|\bStift|Société|\bCompany\b|\bAssociates\b|\bManagement\b)/i;
+  const LEGAL_ABBR=/(\bSA\b|\bS\.A\.|\bSAS\b|\bAB\b|\bA\/S\b|\bAS\b|\bASA\b|\bAG\b|\bN\.?V\.?\b|\bB\.?V\.?\b|\bSE\b|\bLP\b)/;
+  const isNaturalPerson=t=>{const n=t.person_name||'';return !t.is_legal_person && !LEGAL_KW.test(n) && !LEGAL_ABBR.test(n);};
   function insiderCell(t){
     if(!t.person_name) return '—';
-    // only a KNOWN person (confidently-parsed natural person, with an id) links to their
-    // portfolio. Partial parses (uncertain/garbled names) and legal entities stay plain text.
-    const known = t.parse_status==='success' && !t.is_legal_person && t.person_id;
+    // only a KNOWN natural person (confidently parsed, not a company, with an id) links to
+    // their portfolio. Companies, partial/garbled parses and name-less rows stay plain text.
+    const known = t.parse_status==='success' && isNaturalPerson(t) && t.person_id;
     if(!known) return t.person_name;
     return `<a href="?person=${t.person_id}" title="See ${esc(t.person_name)}'s filing history">${t.person_name}</a>`;
   }
